@@ -1,0 +1,120 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Estudiante {
+  id                               String   @id @default(uuid())
+  apellidos                        String
+  nombres                          String
+  cedulaIdentidad                  String   @unique
+  fechaNacimiento                  String
+  edad                             String
+  sexo                             String
+  lugarNacimiento                  String
+  municipio                        String
+  parroquia                        String
+  direccionHabitacion              String
+  numeroTelefonoCelular            String
+  numeroTelefonoLocal              String
+  correoElectronico                String
+  nombreAgrupacionesPertenecio     String
+  añoInicio                       String
+  agrupacionPertenece              String
+  nucleo                           String?
+  instrumentoPrincipal             String?
+  instrumentosSecundarios          String?
+  nombreColegio                    String
+  gradoCursa                       String
+  enfermedadesPadece               String
+  otrasEnfermedades                String?
+  condicionAlumno                  String
+  especifiqueCondicion             String?
+  necesidadesEspecialesAprendizaje String
+  especifiqueNecesidades           String?
+  esAlergico                       String
+  especifiqueAlergia               String?
+  estaVacunado                     String
+  numeroDosisVacuna                String
+  representanteId                  String?
+  createdAt                        DateTime @default(now())
+  updatedAt                        DateTime @updatedAt
+
+  representante Representante?          @relation(fields: [representanteId], references: [id], onDelete: Cascade)
+  instrumentos  InstrumentoEstudiante[]
+
+  @@map("estudiantes")
+}
+
+model InstrumentoEstudiante {
+  id           String     @id @default(uuid())
+  instrumento  String
+  esPrincipal  Boolean    @default(false)
+  estudianteId String
+  estudiante   Estudiante @relation(fields: [estudianteId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@map("instrumento_estudiante")
+}
+
+model Representante {
+  id                                 String       @id @default(uuid())
+  nombreApellidoMadre                String
+  cedulaMadre                        String
+  madreViveConAlumno                 String
+  gradoInstruccionMadre              String
+  direccionMadre                     String
+  telefonoMadre                      String
+  correoMadre                        String
+  nombreApellidoPadre                String
+  cedulaPadre                        String
+  padreViveConAlumno                 String
+  gradoInstruccionPadre              String
+  direccionPadre                     String
+  telefonoPadre                      String
+  correoPadre                        String
+  nombreApellidoRepresentanteLegal   String
+  cedulaRepresentanteLegal           String
+  representanteLegalViveConAlumno    String
+  gradoInstruccionRepresentanteLegal String
+  direccionRepresentanteLegal        String
+  telefonoRepresentanteLegal         String
+  correoRepresentanteLegal           String
+  parentescoRepresentanteLegal       String
+  createdAt                          DateTime     @default(now())
+  updatedAt                          DateTime     @updatedAt
+  estudiantes                        Estudiante[]
+
+  @@map("representantes")
+}
+
+// MODELO DE USUARIO ACTUALIZADO CON ROL
+model Usuario {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  nombre    String
+  apellido  String
+  cedula    String   @unique
+  password  String
+  rolId     Int
+  rol       Rol      @relation(fields: [rolId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("usuarios")
+}
+
+// NUEVO MODELO DE ROL
+model Rol {
+  id       Int       @id @default(autoincrement())
+  rol      String    @unique
+  usuarios Usuario[]
+
+  @@map("roles")
+}
