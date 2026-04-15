@@ -11,8 +11,8 @@ const handler = NextAuth({
     CredentialsProvider({
       name: 'credentials',
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        email: { label: 'Email', type: 'email', placeholder: 'correo@ejemplo.com' },
+        password: { label: 'Contraseña', type: 'password' }
       },
       async authorize(credentials) {
         console.log("\n🔐 ===== INTENTO DE LOGIN =====");
@@ -92,12 +92,10 @@ const handler = NextAuth({
     })
   ],
   callbacks: {
-    async jwt({ token, user, account, profile, session, trigger }) {
+    async jwt({ token, user }) {
       console.log("\n📝 JWT Callback - Datos recibidos:");
       console.log("   - Token actual:", token);
       console.log("   - User:", user ? "✓ presente" : "✗ no presente");
-      console.log("   - Account:", account ? "✓" : "✗");
-      console.log("   - Trigger:", trigger);
       
       if (user) {
         console.log("   Agregando datos del user al token:");
@@ -142,7 +140,7 @@ const handler = NextAuth({
     maxAge: 30 * 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true, // Activar debug mode
+  debug: true,
 });
 
 export { handler as GET, handler as POST };
