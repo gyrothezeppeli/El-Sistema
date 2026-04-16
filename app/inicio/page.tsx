@@ -65,16 +65,9 @@ function HomeContent() {
       <nav className="bg-[#362511] backdrop-blur-md border-b border-[#795C34] sticky top-0 z-50 shadow-lg">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
-            {/* Logo/Brand */}
+            {/* Solo el nombre del sistema */}
             <div className="flex items-center space-x-3">
-              <div className="relative w-10 h-10">
-                <Image
-                  src="/images/logo.png"
-                  alt="Logo EL SISTEMA"
-                  fill
-                  className="object-contain"
-                />
-              </div>
+              <span className="text-white text-xl font-bold">Sistema Integral de Gestión de Prácticas Musicales</span>
             </div>
 
             {/* Navigation Buttons */}
@@ -232,20 +225,9 @@ function HomeContent() {
         
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="max-w-4xl mx-auto">
-            {/* Logo arriba del título */}
-            <div className="flex justify-center mb-6 md:mb-8">
-              <div className="relative w-24 h-24 md:w-32 md:h-32">
-                <Image
-                  src="/images/logo.png"
-                  alt="Logo EL SISTEMA"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
-            
+            {/* Título principal - solo texto sin logo */}
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 text-[#F8F4F0] drop-shadow-lg">
-              EL SISTEMA
+              Sistema Integral de Gestión de Prácticas Musicales
             </h1>
             <div className="text-xl md:text-2xl lg:text-3xl mb-6 md:mb-8 text-white font-light space-y-1 md:space-y-2">
               <p>Música</p>
