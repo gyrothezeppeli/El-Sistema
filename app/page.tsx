@@ -147,7 +147,7 @@ export default function AuthPage() {
         } else {
           addDebugLog('⚠️ Login exitoso pero no se pudo obtener la sesión');
           toast.success('¡Bienvenido!');
-          router.push('/dashboard');
+          router.push('/inicio');
           router.refresh();
         }
       }
