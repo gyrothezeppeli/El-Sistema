@@ -93,12 +93,7 @@ function HomeContent() {
                 </Button>
               </Link>
 
-              <Link href="/registro">
-                <Button variant="ghost" className="flex items-center gap-2 text-white hover:bg-[#795C34] hover:text-white font-semibold transition-colors duration-200">
-                  <UserPlus className="w-5 h-5" />
-                  Registro
-                </Button>
-              </Link>
+             
 
               {/* Botón de Tabla - Visible SOLO para administradores */}
               {isAdmin && (
