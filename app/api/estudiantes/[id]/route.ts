@@ -1,258 +1,231 @@
-import { NextResponse } from 'next/server'
-import { NextRequest } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
-const prisma = new PrismaClient()
-
-// Definir tipo para error con código (para errores de Prisma)
-interface ErrorWithCode extends Error {
-  code?: string
-}
-
-// Definir tipo para el cuerpo de la solicitud PUT
-interface UpdateEstudianteData {
-  apellidos?: string
-  nombres?: string
-  cedulaIdentidad?: string
-  fechaNacimiento?: string
-  edad?: string
-  sexo?: string
-  lugarNacimiento?: string
-  municipio?: string
-  parroquia?: string
-  direccionHabitacion?: string
-  numeroTelefonoCelular?: string
-  numeroTelefonoLocal?: string
-  correoElectronico?: string
-  nombreAgrupacionesPertenecio?: string
-  añoInicio?: string
-  agrupacionPertenece?: string
-  nucleo?: string
-  nombreColegio?: string
-  gradoCursa?: string
-  enfermedadesPadece?: string
-  condicionAlumno?: string
-  necesidadesEspecialesAprendizaje?: string
-  esAlergico?: string
-  estaVacunado?: string
-  numeroDosisVacuna?: string
-  representanteId?: string | null
-  instrumento?: string
-  esPrincipal?: boolean
-}
-
-// GET /api/estudiantes/[id] - Obtener un estudiante específico
+// GET: Obtener un estudiante específico
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> } // params es una Promise
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params // ¡Agrega await aquí!
+    const session = await getServerSession(authOptions);
     
-    if (!id) {
+    if (!session) {
       return NextResponse.json(
-        { error: 'ID del estudiante es requerido' },
-        { status: 400 }
-      )
+        { error: 'No autorizado' },
+        { status: 401 }
+      );
     }
+
+    const { id } = params;
 
     const estudiante = await prisma.estudiante.findUnique({
       where: { id },
       include: {
-        instrumentos: true,
         representante: true
       }
-    })
+    });
 
     if (!estudiante) {
       return NextResponse.json(
         { error: 'Estudiante no encontrado' },
         { status: 404 }
-      )
+      );
     }
 
-    return NextResponse.json(estudiante)
+    return NextResponse.json(estudiante);
   } catch (error) {
-    console.error('Error fetching student:', error)
+    console.error('Error al obtener estudiante:', error);
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      { error: 'Error al obtener el estudiante' },
       { status: 500 }
-    )
-  } finally {
-    await prisma.$disconnect()
+    );
   }
 }
 
-// PUT /api/estudiantes/[id] - Actualizar un estudiante
+// PUT: Actualizar un estudiante completo
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> } // params es una Promise
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params // ¡Agrega await aquí!
-    const body = await request.json() as UpdateEstudianteData
-
-    if (!id) {
+    const session = await getServerSession(authOptions);
+    
+    if (!session) {
       return NextResponse.json(
-        { error: 'ID del estudiante es requerido' },
-        { status: 400 }
-      )
+        { error: 'No autorizado' },
+        { status: 401 }
+      );
     }
 
-    // Verificar si el estudiante existe
-    const estudianteExistente = await prisma.estudiante.findUnique({
-      where: { id }
-    })
+    const { id } = params;
+    const body = await request.json();
 
-    if (!estudianteExistente) {
+    // Verificar si el estudiante existe
+    const existingEstudiante = await prisma.estudiante.findUnique({
+      where: { id },
+      include: { representante: true }
+    });
+
+    if (!existingEstudiante) {
       return NextResponse.json(
         { error: 'Estudiante no encontrado' },
         { status: 404 }
-      )
+      );
     }
 
-    // Preparar datos para actualizar
-    const datosActualizacion = {
-      apellidos: body.apellidos,
-      nombres: body.nombres,
-      cedulaIdentidad: body.cedulaIdentidad,
-      fechaNacimiento: body.fechaNacimiento,
-      edad: body.edad,
-      sexo: body.sexo,
-      lugarNacimiento: body.lugarNacimiento,
-      municipio: body.municipio,
-      parroquia: body.parroquia,
-      direccionHabitacion: body.direccionHabitacion,
-      numeroTelefonoCelular: body.numeroTelefonoCelular,
-      numeroTelefonoLocal: body.numeroTelefonoLocal,
-      correoElectronico: body.correoElectronico,
-      nombreAgrupacionesPertenecio: body.nombreAgrupacionesPertenecio,
-      añoInicio: body.añoInicio,
-      agrupacionPertenece: body.agrupacionPertenece,
-      nucleo: body.nucleo,
-      nombreColegio: body.nombreColegio,
-      gradoCursa: body.gradoCursa,
-      enfermedadesPadece: body.enfermedadesPadece,
-      condicionAlumno: body.condicionAlumno,
-      necesidadesEspecialesAprendizaje: body.necesidadesEspecialesAprendizaje,
-      esAlergico: body.esAlergico,
-      estaVacunado: body.estaVacunado,
-      numeroDosisVacuna: body.numeroDosisVacuna,
-      representanteId: body.representanteId || null,
-    }
-
-    // Actualizar instrumentos si se proporcionan
-    if (body.instrumento) {
-      // Eliminar instrumentos existentes y crear nuevos
-      await prisma.instrumentoEstudiante.deleteMany({
-        where: { estudianteId: id }
-      })
-
-      await prisma.instrumentoEstudiante.create({
-        data: {
-          instrumento: body.instrumento,
-          esPrincipal: body.esPrincipal || true,
-          estudianteId: id
+    // Verificar si la cédula ya está en uso por otro estudiante
+    if (body.cedulaIdentidad && body.cedulaIdentidad !== existingEstudiante.cedulaIdentidad) {
+      const cedulaExists = await prisma.estudiante.findFirst({
+        where: {
+          cedulaIdentidad: body.cedulaIdentidad,
+          id: { not: id }
         }
-      })
+      });
+
+      if (cedulaExists) {
+        return NextResponse.json(
+          { error: 'Ya existe otro estudiante con esta cédula' },
+          { status: 400 }
+        );
+      }
     }
 
-    const estudianteActualizado = await prisma.estudiante.update({
+    // Actualizar el estudiante
+    const updatedEstudiante = await prisma.estudiante.update({
       where: { id },
-      data: datosActualizacion,
+      data: {
+        apellidos: body.apellidos,
+        nombres: body.nombres,
+        cedulaIdentidad: body.cedulaIdentidad,
+        fechaNacimiento: body.fechaNacimiento,
+        edad: body.edad,
+        sexo: body.sexo,
+        lugarNacimiento: body.lugarNacimiento || '',
+        municipio: body.municipio || '',
+        parroquia: body.parroquia || '',
+        direccionHabitacion: body.direccionHabitacion || '',
+        numeroTelefonoCelular: body.numeroTelefonoCelular || '',
+        numeroTelefonoLocal: body.numeroTelefonoLocal || '',
+        correoElectronico: body.correoElectronico || '',
+        nombreAgrupacionesPertenecio: body.nombreAgrupacionesPertenecio || '',
+        añoInicio: body.añoInicio || '',
+        agrupacionPertenece: body.agrupacionPertenece || '',
+        instrumentoPrincipal: body.instrumentoPrincipal || '',
+        instrumentosSecundarios: body.instrumentosSecundarios || '',
+        enfermedadesPadece: body.enfermedadesPadece || '',
+        condicionAlumno: body.condicionAlumno || '',
+        necesidadesEspecialesAprendizaje: body.necesidadesEspecialesAprendizaje || '',
+        esAlergico: body.esAlergico || 'no',
+        estaVacunado: body.estaVacunado || 'no',
+        numeroDosisVacuna: body.numeroDosisVacuna || '',
+      },
       include: {
-        instrumentos: true,
         representante: true
       }
-    })
+    });
 
-    return NextResponse.json(estudianteActualizado)
-  } catch (error: unknown) {
-    console.error('Error updating student:', error)
-    
-    // Convertir error a tipo específico para verificar el código
-    const err = error as ErrorWithCode
-    
-    // Manejar errores específicos de Prisma
-    if (err.code === 'P2002') {
-      return NextResponse.json(
-        { error: 'Ya existe un estudiante con esta cédula de identidad' },
-        { status: 400 }
-      )
-    }
-
-    // Obtener mensaje de error de forma segura
-    let errorMessage = 'Error al actualizar el estudiante'
-    if (err.message) {
-      errorMessage = err.message
-    }
-
+    return NextResponse.json(updatedEstudiante);
+  } catch (error) {
+    console.error('Error al actualizar estudiante:', error);
     return NextResponse.json(
-      { error: errorMessage },
+      { error: 'Error al actualizar el estudiante' },
       { status: 500 }
-    )
-  } finally {
-    await prisma.$disconnect()
+    );
   }
 }
 
-// DELETE /api/estudiantes/[id] - Eliminar un estudiante
-export async function DELETE(
+// PATCH: Actualizar parcialmente un estudiante
+export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> } // params es una Promise
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params // ¡Agrega await aquí!
-
-    if (!id) {
+    const session = await getServerSession(authOptions);
+    
+    if (!session) {
       return NextResponse.json(
-        { error: 'ID del estudiante es requerido' },
-        { status: 400 }
-      )
+        { error: 'No autorizado' },
+        { status: 401 }
+      );
     }
 
-    // Verificar si el estudiante existe
-    const estudianteExistente = await prisma.estudiante.findUnique({
-      where: { id }
-    })
+    const { id } = params;
+    const body = await request.json();
 
-    if (!estudianteExistente) {
+    const updatedEstudiante = await prisma.estudiante.update({
+      where: { id },
+      data: body,
+      include: {
+        representante: true
+      }
+    });
+
+    return NextResponse.json(updatedEstudiante);
+  } catch (error) {
+    console.error('Error al actualizar estudiante:', error);
+    return NextResponse.json(
+      { error: 'Error al actualizar el estudiante' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE: Eliminar un estudiante
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session) {
+      return NextResponse.json(
+        { error: 'No autorizado' },
+        { status: 401 }
+      );
+    }
+
+    const { id } = params;
+
+    // Verificar si el estudiante existe
+    const estudiante = await prisma.estudiante.findUnique({
+      where: { id },
+      include: { representante: true }
+    });
+
+    if (!estudiante) {
       return NextResponse.json(
         { error: 'Estudiante no encontrado' },
         { status: 404 }
-      )
+      );
     }
 
-    // Eliminar instrumentos primero (por la relación)
-    await prisma.instrumentoEstudiante.deleteMany({
-      where: { estudianteId: id }
-    })
+    // Eliminar en una transacción para asegurar consistencia
+    await prisma.$transaction(async (tx) => {
+      // Si tiene representante, eliminarlo primero
+      if (estudiante.representanteId) {
+        await tx.representante.delete({
+          where: { id: estudiante.representanteId }
+        });
+      }
 
-    // Luego eliminar el estudiante
-    await prisma.estudiante.delete({
-      where: { id }
-    })
+      // Luego eliminar el estudiante
+      await tx.estudiante.delete({
+        where: { id }
+      });
+    });
 
+    return NextResponse.json({ 
+      message: 'Estudiante eliminado exitosamente',
+      deletedId: id 
+    });
+  } catch (error) {
+    console.error('Error al eliminar estudiante:', error);
     return NextResponse.json(
-      { message: 'Estudiante eliminado correctamente' },
-      { status: 200 }
-    )
-  } catch (error: unknown) {
-    console.error('Error deleting student:', error)
-    
-    // Obtener mensaje de error de forma segura
-    let errorMessage = 'Error al eliminar el estudiante'
-    if (error instanceof Error) {
-      errorMessage = error.message
-    } else if (typeof error === 'string') {
-      errorMessage = error
-    }
-
-    return NextResponse.json(
-      { error: errorMessage },
+      { error: 'Error al eliminar el estudiante' },
       { status: 500 }
-    )
-  } finally {
-    await prisma.$disconnect()
+    );
   }
 }
