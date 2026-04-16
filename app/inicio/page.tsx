@@ -250,7 +250,7 @@ function HomeContent() {
             </div>
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 text-[#F8F4F0] drop-shadow-lg">
-              Sistema Integral de Gestión de Prácticas Musicales
+              EL SISTEMA
             </h1>
             <div className="text-xl md:text-2xl lg:text-3xl mb-6 md:mb-8 text-white font-light space-y-1 md:space-y-2">
               <p>Música</p>
