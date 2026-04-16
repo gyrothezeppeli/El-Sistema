@@ -65,7 +65,7 @@ export default function AuthPage() {
             router.push('/dashboard');
           } else {
             addDebugLog('Redirigiendo a inicio de usuario');
-            router.push('/dashboard');
+            router.push('/inicio');
           }
         } else {
           addDebugLog('No hay sesión activa');
@@ -137,11 +137,11 @@ export default function AuthPage() {
           if (session.user.rol === 'administrador') {
             addDebugLog('Redirigiendo a dashboard de administrador');
             toast.success('¡Bienvenido Administrador!');
-            router.push('/dashboard');
+            router.push('/inicio');
           } else {
             addDebugLog('Redirigiendo a inicio de usuario');
             toast.success('¡Bienvenido!');
-            router.push('/dashboard');
+            router.push('/inicio');
           }
           router.refresh();
         } else {
