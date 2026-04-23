@@ -1897,16 +1897,18 @@ export default function RegistroPage() {
     return telefono.length >= 10 && validarSoloNumeros(telefono);
   };
 
+  // *** VALIDACIÓN DE FECHA MODIFICADA: SIN LÍMITE DE EDAD ***
   const validarFechaNacimiento = (fecha: string): boolean => {
     if (!fecha) return false;
     
     const fechaNac = new Date(fecha);
     const hoy = new Date();
-    const edad = hoy.getFullYear() - fechaNac.getFullYear();
     
+    // Solo validar que la fecha no sea futura
     if (fechaNac > hoy) return false;
     
-    return edad >= 5 && edad <= 25;
+    // Ya no hay límite de edad mínimo ni máximo
+    return true;
   };
 
   const validarAñoInicio = (año: string): boolean => {
@@ -2067,7 +2069,7 @@ export default function RegistroPage() {
     if (!formData.fechaNacimiento) {
       newErrors.fechaNacimiento = 'La fecha de nacimiento es obligatoria';
     } else if (!validarFechaNacimiento(formData.fechaNacimiento)) {
-      newErrors.fechaNacimiento = 'La fecha de nacimiento no es válida o la edad está fuera del rango permitido (5-25 años)';
+      newErrors.fechaNacimiento = 'La fecha de nacimiento no es válida (no puede ser futura)';
     }
     
     if (!formData.sexo) {
@@ -2127,22 +2129,25 @@ export default function RegistroPage() {
     }
     
     if (!formData.agrupacionPertenece) {
-      newErrors.agrupacionPertenece = 'La orquesta actual es obligatoria'; // *** Mensaje actualizado ***
+      newErrors.agrupacionPertenece = 'La orquesta actual es obligatoria';
     }
 
-    if (!formData.instrumentoPrincipal) {
-      newErrors.instrumentoPrincipal = 'El instrumento principal es obligatorio';
-    }
+    // *** INSTRUMENTO PRINCIPAL ES OPCIONAL - Eliminada la validación ***
+    // if (!formData.instrumentoPrincipal) {
+    //   newErrors.instrumentoPrincipal = 'El instrumento principal es obligatorio';
+    // }
     
-    if (!formData.nombreColegio.trim()) {
-      newErrors.nombreColegio = 'El nombre del colegio es obligatorio';
-    } else if (formData.nombreColegio.trim().length < 3) {
-      newErrors.nombreColegio = 'El nombre del colegio debe tener al menos 3 caracteres';
-    }
+    // *** NOMBRE DEL COLEGIO ES OPCIONAL - Eliminada la validación ***
+    // if (!formData.nombreColegio.trim()) {
+    //   newErrors.nombreColegio = 'El nombre del colegio es obligatorio';
+    // } else if (formData.nombreColegio.trim().length < 3) {
+    //   newErrors.nombreColegio = 'El nombre del colegio debe tener al menos 3 caracteres';
+    // }
     
-    if (!formData.gradoCursa) {
-      newErrors.gradoCursa = 'El grado actual es obligatorio';
-    }
+    // *** GRADO QUE CURSA ES OPCIONAL - Eliminada la validación ***
+    // if (!formData.gradoCursa) {
+    //   newErrors.gradoCursa = 'El grado actual es obligatorio';
+    // }
     
     if (!formData.condicionAlumno) {
       newErrors.condicionAlumno = 'Este campo es obligatorio';
@@ -2213,7 +2218,9 @@ export default function RegistroPage() {
           especifiqueNecesidades: formData.especifiqueNecesidades || "",
           especifiqueAlergia: formData.especifiqueAlergia || "",
           numeroDosisVacuna: formData.numeroDosisVacuna || "",
-          sexo: formData.sexo
+          sexo: formData.sexo,
+          nombreColegio: formData.nombreColegio || "",
+          gradoCursa: formData.gradoCursa || ""
         };
 
         const response = await fetch('/api/estudiantes', {
@@ -2634,15 +2641,17 @@ export default function RegistroPage() {
                     )}
                   </div>
 
+                  {/* *** INSTRUMENTO PRINCIPAL AHORA ES OPCIONAL - Eliminado el asterisco *** */}
                   <div className="space-y-2">
                     <Label htmlFor="instrumentoPrincipal" className="text-sm font-bold text-[#362511]">
-                      Instrumento Principal <span className="text-red-500">*</span>
+                      Instrumento Principal (Opcional)
                     </Label>
                     <Select value={formData.instrumentoPrincipal} onValueChange={(value: string) => handleChange('instrumentoPrincipal', value)}>
                       <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.instrumentoPrincipal ? 'border-red-500' : ''}`}>
                         <SelectValue placeholder="Seleccione el instrumento" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-[#E8D5C4]">
+                        <SelectItem value="">Ninguno</SelectItem>
                         {instrumentosMusicales.map((instrumento: string) => (
                           <SelectItem key={instrumento} value={instrumento}>
                             {instrumento}
@@ -2711,9 +2720,10 @@ export default function RegistroPage() {
                   Información Académica
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* *** NOMBRE DEL COLEGIO AHORA ES OPCIONAL - Eliminado el asterisco *** */}
                   <div className="space-y-2">
                     <Label htmlFor="nombreColegio" className="text-sm font-bold text-[#362511]">
-                      Nombre del Colegio <span className="text-red-500">*</span>
+                      Nombre del Colegio (Opcional)
                     </Label>
                     <Input
                       id="nombreColegio"
@@ -2727,15 +2737,17 @@ export default function RegistroPage() {
                     )}
                   </div>
 
+                  {/* *** GRADO QUE CURSA AHORA ES OPCIONAL - Eliminado el asterisco *** */}
                   <div className="space-y-2">
                     <Label htmlFor="gradoCursa" className="text-sm font-bold text-[#362511]">
-                      Grado que Cursa <span className="text-red-500">*</span>
+                      Grado que Cursa (Opcional)
                     </Label>
                     <Select value={formData.gradoCursa} onValueChange={(value: string) => handleChange('gradoCursa', value)}>
                       <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.gradoCursa ? 'border-red-500' : ''}`}>
-                        <SelectValue placeholder="Seleccione el grado" />
+                        <SelectValue placeholder="Seleccione el grado (opcional)" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-[#E8D5C4]">
+                        <SelectItem value="">Ninguno</SelectItem>
                         {gradosEscolares.map((grado: string) => (
                           <SelectItem key={grado} value={grado}>
                             {grado}
