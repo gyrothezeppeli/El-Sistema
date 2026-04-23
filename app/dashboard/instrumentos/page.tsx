@@ -1,277 +1,421 @@
-// app/instrumentos/page.tsx
+// app/page.tsx
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { ArrowLeft, Music } from 'lucide-react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Music, History, UserPlus, Star, User, ArrowRight, X, Table, LogOut } from 'lucide-react';
 
-export default function InstrumentosPage() {
-  const [selectedInstrument, setSelectedInstrument] = useState<string | null>(null);
+// Componente interno que usa useSession
+function HomeContent() {
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
+  const { data: session, status } = useSession();
+  
+  // Determinar si el usuario es administrador (CORREGIDO: 'administrador' no 'admin')
+  const isAdmin = session?.user?.rol === 'administrador';
+  
+  // Para depuración - mostrar en consola
+  console.log('📊 Sesión en HomePage:', {
+    session: session?.user,
+    rol: session?.user?.rol,
+    isAdmin: isAdmin,
+    status: status
+  });
 
-  const instrumentos = [
-    {
-      nombre: 'Contrabajo',
-      imagen: '/images/contrabajo.png',
-      imagenFinal: '/images/viola_final.png',
-      descripcion: 'El contrabajo es el instrumento más grande y de sonido más grave de la familia de los instrumentos de cuerda frotada. Se utiliza en orquestas sinfónicas, jazz y otros géneros musicales.',
-      rutaPartituras: '/partituras/contrabajo'
-    },
-    {
-      nombre: 'Viola',
-      imagen: '/images/viola.jpg',
-      imagenFinal: '/images/viola_final.png',
-      descripcion: 'La viola es un instrumento de cuerda frotada, similar en construcción al violín pero de mayor tamaño y con un sonido más grave y cálido.',
-      rutaPartituras: '/partituras/viola'
-    },
-    {
-      nombre: 'Violín 1',
-      imagen: '/images/violin_1.jpg',
-      imagenFinal: '/images/violin_final.png',
-      descripcion: 'El violín es el instrumento más agudo de la familia de los instrumentos de cuerda frotada. El violín 1 generalmente lleva la melodía principal.',
-      rutaPartituras: '/partituras/violin1'
-    },
-    {
-      nombre: 'Violonchelo',
-      imagen: '/images/violonchelo.jpg',
-      imagenFinal: '/images/Violonchelo_final.png',
-      descripcion: 'El violonchelo o cello es un instrumento de cuerda frotada de tesitura media-grave. Se toca apoyado entre las piernas del músico.',
-      rutaPartituras: '/partituras/violonchelo'
-    },
-    {
-      nombre: 'Violín 2',
-      imagen: '/images/violin_2.jpg',
-      imagenFinal: '/images/violin_final.png',
-      descripcion: 'El segundo violín complementa al primer violín en la orquesta, generalmente tocando armonías y contramelodías.',
-      rutaPartituras: '/partituras/violin2'
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await signOut({ 
+        redirect: false
+      });
+      toast.success('Sesión cerrada exitosamente');
+      router.push('/');
+      router.refresh();
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      toast.error('Error al cerrar sesión');
+    } finally {
+      setIsLoggingOut(false);
     }
-  ];
-
-  const instrumentoActual = instrumentos.find(instr => instr.nombre === selectedInstrument);
-
-  const fallbackSvg = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmNGYwIi8+PHJlY3QgeD0iMjAlIiB5PSIyMCUiIHdpZHRoPSI2MCUiIGhlaWdodD0iNjAlIiBmaWxsPSIjZThkNTVjNCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiM2NTM1MGYiPkltYWdlbiBubyBkaXNwb25pYmxlPC90ZXh0Pjwvc3ZnPg==';
-
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    const target = e.currentTarget;
-    target.src = fallbackSvg;
-    target.classList.add('object-contain', 'p-4');
-    target.classList.remove('object-cover');
   };
 
-  const getButtonColor = (instrumentName: string) => {
-    const colors = {
-      'Contrabajo': 'bg-[#9A784F] hover:bg-[#795C34] text-white',
-      'Viola': 'bg-[#795C34] hover:bg-[#65350F] text-white',
-      'Violín 1': 'bg-[#65350F] hover:bg-[#362511] text-white',
-      'Violonchelo': 'bg-[#80471C] hover:bg-[#652A0E] text-white',
-      'Violín 2': 'bg-[#9A784F] hover:bg-[#795C34] text-white'
-    };
-    return colors[instrumentName as keyof typeof colors] || 'bg-[#795C34] hover:bg-[#65350F] text-white';
-  };
-
-  const getBorderColor = (instrumentName: string) => {
-    const colors = {
-      'Contrabajo': 'border-[#9A784F] hover:border-[#795C34]',
-      'Viola': 'border-[#795C34] hover:border-[#65350F]',
-      'Violín 1': 'border-[#65350F] hover:border-[#362511]',
-      'Violonchelo': 'border-[#80471C] hover:border-[#652A0E]',
-      'Violín 2': 'border-[#9A784F] hover:border-[#795C34]'
-    };
-    return colors[instrumentName as keyof typeof colors] || 'border-[#795C34] hover:border-[#65350F]';
-  };
+  // Si está cargando la sesión, mostrar un indicador
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#F8F4F0] via-[#E8D5C4] to-[#D4B8A4] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#795C34] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#362511] text-xl">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8F4F0] via-[#E8D5C4] to-[#D4B8A4]">
       {/* Navigation Header */}
       <nav className="bg-[#362511] backdrop-blur-md border-b border-[#795C34] sticky top-0 z-50 shadow-lg">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-28">
-            <div className="flex items-center space-x-6">
+          <div className="flex items-center justify-between h-20">
+            {/* Solo el nombre del sistema */}
+            <div className="flex items-center space-x-3">
+              <span className="text-white text-xl font-bold">Sistema Integral de Gestión de Prácticas Musicales</span>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="flex items-center space-x-4">
+              <Link href="/inicio/instrumentos">
+                <Button variant="ghost" className="flex items-center gap-2 text-white hover:bg-[#795C34] hover:text-white font-semibold transition-colors duration-200">
+                  <Music className="w-5 h-5" />
+                  Instrumentos
+                </Button>
+              </Link>
+              
+              <Link href="#historia">
+                <Button variant="ghost" className="flex items-center gap-2 text-white hover:bg-[#795C34] hover:text-white font-semibold transition-colors duration-200">
+                  <History className="w-5 h-5" />
+                  Historia
+                </Button>
+              </Link>
+
+             
+
+              {/* Botón de Tabla - Visible SOLO para administradores */}
+              {isAdmin && (
+                <Link href="/tabla">
+                  <Button variant="ghost" className="flex items-center gap-2 text-white hover:bg-[#795C34] hover:text-white font-semibold transition-colors duration-200">
+                    <Table className="w-5 h-5" />
+                    Tabla Estudiantes
+                  </Button>
+                </Link>
+              )}
+
+              {/* Botón de Inscripción */}
+              <Button 
+                onClick={() => setShowRegistrationModal(true)}
+                className="flex items-center gap-2 bg-[#9A784F] hover:bg-[#795C34] text-white font-bold transition-colors duration-200 shadow-lg"
+              >
+                <UserPlus className="w-5 h-5" />
+                Inscripción
+              </Button>
+
+              {/* Botón de Cerrar Sesión */}
               <Button 
                 variant="ghost" 
-                className="flex items-center gap-3 text-white hover:bg-[#795C34] text-lg h-14 px-6 font-semibold transition-colors duration-200"
-                onClick={() => router.push('/inicio')}
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors duration-200"
               >
-                <ArrowLeft className="w-6 h-6" />
-                Volver 
+                <LogOut className="w-5 h-5" />
+                {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
               </Button>
-              <div className="flex items-center space-x-4">
-                <div className="relative w-14 h-14">
-                  <Image
-                    src="/images/logo.png"
-                    alt="Logo EL SISTEMA"
-                    fill
-                    className="object-contain"
-                    onError={handleImageError}
-                  />
-                </div>
-                <span className="text-2xl font-bold text-white drop-shadow-sm">Instrumentos</span>
-              </div>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#362511] mb-6 drop-shadow-sm">
-            Nuestros Instrumentos
-          </h1>
-          <p className="text-xl text-[#65350F] max-w-3xl mx-auto font-medium">
-            Explora cada instrumento de nuestra orquesta
-          </p>
-        </div>
-
-        {/* Grid de instrumentos */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto mb-16">
-          {instrumentos.slice(0, 3).map((instrumento) => (
-            <div key={instrumento.nombre} className="text-center space-y-8">
-              <h3 className="text-2xl font-bold text-[#362511] mb-4 drop-shadow-sm">
-                {instrumento.nombre}
-              </h3>
-              
-              <div className="relative group inline-block">
-                <Button
-                  variant="outline"
-                  className={`w-64 h-64 rounded-3xl bg-white/90 border-4 ${getBorderColor(instrumento.nombre)} transition-all duration-300 relative overflow-hidden shadow-2xl hover:shadow-4xl hover:scale-105`}
-                  onClick={() => setSelectedInstrument(instrumento.nombre)}
-                >
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Image
-                      src={instrumento.imagen}
-                      alt={instrumento.nombre}
-                      fill
-                      className="object-cover opacity-90 group-hover:opacity-70 transition-opacity duration-300"
-                      onError={handleImageError}
-                    />
-                  </div>
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Segunda fila con 2 instrumentos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
-          {instrumentos.slice(3, 5).map((instrumento) => (
-            <div key={instrumento.nombre} className="text-center space-y-8">
-              <h3 className="text-2xl font-bold text-[#362511] mb-4 drop-shadow-sm">
-                {instrumento.nombre}
-              </h3>
-              
-              <div className="relative group inline-block">
-                <Button
-                  variant="outline"
-                  className={`w-64 h-64 rounded-3xl bg-white/90 border-4 ${getBorderColor(instrumento.nombre)} transition-all duration-300 relative overflow-hidden shadow-2xl hover:shadow-4xl hover:scale-105`}
-                  onClick={() => setSelectedInstrument(instrumento.nombre)}
-                >
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Image
-                      src={instrumento.imagen}
-                      alt={instrumento.nombre}
-                      fill
-                      className="object-cover opacity-90 group-hover:opacity-70 transition-opacity duration-300"
-                      onError={handleImageError}
-                    />
-                  </div>
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Dialog con botones de partituras para todos los instrumentos */}
-      <Dialog open={!!selectedInstrument} onOpenChange={(open) => !open && setSelectedInstrument(null)}>
-        <DialogContent className="max-w-4xl w-[95vw] h-[90vh] max-h-[1000px] overflow-y-auto p-6 bg-white border-[#9A784F] shadow-2xl">
-          <DialogHeader className="mb-6">
-            <DialogTitle className="text-3xl font-bold text-center text-[#362511] mb-3">
-              {instrumentoActual?.nombre}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-8">
-            {/* Imagen */}
-            <div className="flex justify-center">
-              <div className="relative w-full max-w-2xl aspect-square rounded-2xl overflow-hidden border-4 border-[#E8D5C4] bg-[#F8F4F0] shadow-xl">
-                {instrumentoActual?.imagenFinal ? (
-                  <Image
-                    src={instrumentoActual.imagenFinal}
-                    alt={`${instrumentoActual.nombre} - Vista detallada`}
-                    fill
-                    className="object-contain p-6"
-                    onError={handleImageError}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-[#F8F4F0]">
-                    <Image
-                      src={fallbackSvg}
-                      alt="Imagen no disponible"
-                      fill
-                      className="object-contain p-8"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Descripción */}
-            <div className="bg-gradient-to-br from-[#F8F4F0] to-[#E8D5C4] p-8 rounded-2xl border border-[#D4B8A4] shadow-xl">
-              <h3 className="font-bold text-2xl text-[#362511] mb-6 text-center border-b-2 border-[#9A784F] pb-4">
-                Descripción
-              </h3>
-              <p className="text-[#362511] leading-relaxed text-lg text-justify mb-6 font-medium">
-                {instrumentoActual?.descripcion}
-              </p>
-              
-              {/* Botón de partituras integrado en la descripción */}
-              {instrumentoActual && (
-                <div className="text-center mt-6 pt-6 border-t border-[#D4B8A4]">
-                  <Button
-                    onClick={() => router.push(instrumentoActual.rutaPartituras)}
-                    className={`${getButtonColor(instrumentoActual.nombre)} px-8 py-3 text-lg flex items-center gap-3 mx-auto transition-all duration-300 hover:scale-105 font-bold shadow-lg`}
-                  >
-                    <Music className="w-5 h-5" />
-                    Ver Partituras de {instrumentoActual.nombre}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Botones de acción en el footer del dialog */}
-          <div className="flex justify-between items-center pt-6 border-t border-[#E8D5C4] mt-8">
-            {/* Botón de partituras (alternativa en footer) */}
-            {instrumentoActual && (
-              <Button
-                onClick={() => router.push(instrumentoActual.rutaPartituras)}
-                variant="outline"
-                className={`flex items-center gap-2 border-2 font-bold ${getBorderColor(instrumentoActual.nombre)} text-[#362511] hover:text-white ${getButtonColor(instrumentoActual.nombre).replace('text-white', '')}`}
-              >
-                <Music className="w-4 h-4" />
-                Partituras
-              </Button>
-            )}
-            
-            {/* Botón para cerrar */}
+      {/* Modal de Selección de Inscripción */}
+      <Dialog open={showRegistrationModal} onOpenChange={setShowRegistrationModal}>
+        <DialogContent className="max-w-[1000px] mx-auto p-0 overflow-hidden border-[#9A784F] shadow-2xl">
+          {/* Header con botón de cerrar */}
+          <div className="relative bg-gradient-to-r from-[#795C34] to-[#65350F] p-8 text-white">
+            <DialogHeader className="text-center">
+              <DialogTitle className="text-3xl md:text-5xl font-bold">
+                Inscripción
+              </DialogTitle>
+              <DialogDescription className="text-[#F8F4F0] text-xl mt-3">
+                Para mantener el orden para todos los estudiantes.
+              </DialogDescription>
+            </DialogHeader>
             <Button
-              onClick={() => setSelectedInstrument(null)}
-              className="bg-[#795C34] hover:bg-[#65350F] text-white px-8 py-3 text-lg font-semibold shadow-lg transition-colors duration-200"
+              variant="ghost"
+              size="icon"
+              className="absolute right-6 top-6 text-white hover:bg-white/20 w-10 h-10 transition-colors duration-200"
+              onClick={() => setShowRegistrationModal(false)}
             >
-              Cerrar
+              <X className="w-6 h-6" />
             </Button>
+          </div>
+          
+          <div className="p-10 max-h-[60vh] overflow-y-auto bg-white">
+            <div className="grid grid-cols-1 xl:grid-cols-1 gap-8">
+              {/* Inscripción de Estudiantes */}
+              <Card 
+                className="cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-[#9A784F] h-full flex flex-col min-h-[500px] bg-white"
+                onClick={() => {
+                  setShowRegistrationModal(false);
+                  window.location.href = '/inscripcion_alumno';
+                }}
+              >
+                <CardHeader className="text-center pb-6 flex-shrink-0">
+                  <div className="mx-auto w-24 h-24 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-6 border-4 border-[#E8D5C4]">
+                    <User className="w-12 h-12 text-[#9A784F]" />
+                  </div>
+                  <CardTitle className="text-3xl text-[#362511] mb-4">Inscripción de Estudiantes</CardTitle>
+                  <CardDescription className="text-xl text-[#65350F] font-medium">
+                    Para nuevos estudiantes que desean unirse al sistema
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow flex flex-col justify-between">
+                  <div className="space-y-4 text-lg text-[#362511] mb-8 font-medium">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-[#9A784F] rounded-full flex-shrink-0"></div>
+                      <span className="text-left">Información personal del estudiante</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-[#9A784F] rounded-full flex-shrink-0"></div>
+                      <span className="text-left">Datos académicos y musicales</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-[#9A784F] rounded-full flex-shrink-0"></div>
+                      <span className="text-left">Información de salud</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-[#9A784F] rounded-full flex-shrink-0"></div>
+                      <span className="text-left">Continúa con representantes después</span>
+                    </div>
+                  </div>
+                  <Button className="w-full bg-[#9A784F] hover:bg-[#795C34] text-xl py-6 h-auto text-lg font-bold text-white shadow-lg transition-colors duration-200">
+                    Comenzar Inscripción
+                    <ArrowRight className="w-6 h-6 ml-3" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Información adicional */}
+            <div className="bg-[#F8F4F0] border border-[#E8D5C4] rounded-xl p-6 mt-8">
+              <div className="flex items-start gap-4">
+                <svg className="w-6 h-6 text-[#795C34] mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h4 className="font-bold text-[#362511] text-xl mb-2">Proceso de Inscripción Completo</h4>
+                  <p className="text-[#65350F] text-lg font-medium">
+                    Recomendamos comenzar con la <strong>Inscripción de Estudiantes</strong> y luego completar 
+                    con la <strong>Inscripción de Representantes</strong> para un proceso completo.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Hero Section */}
+      <section 
+        className="relative py-20 md:py-32 text-white overflow-hidden min-h-screen flex items-center"
+        style={{
+          backgroundImage: 'url(/images/fondo.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        {/* Overlay para mejor legibilidad */}
+        <div className="absolute inset-0 bg-black/50"></div>
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="max-w-4xl mx-auto">
+            {/* Título principal - solo texto sin logo */}
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 text-[#F8F4F0] drop-shadow-lg">
+              Sistema Integral de Gestión de Prácticas Musicales
+            </h1>
+            <div className="text-xl md:text-2xl lg:text-3xl mb-6 md:mb-8 text-white font-light space-y-1 md:space-y-2">
+              <p>Música</p>
+              <p>Cultura</p>
+              <p>Arte</p>
+            </div>
+            <p className="text-lg md:text-xl lg:text-2xl mb-8 md:mb-12 text-[#E8D5C4] font-medium">
+              Formando músicos, transformando vidas
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#362511] mb-4 drop-shadow-sm">
+              Bienvenido al Sistema
+            </h2>
+            <p className="text-lg md:text-xl text-[#65350F] max-w-2xl mx-auto font-medium">
+              Descubre el mundo de la música a través de nuestros programas educativos
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            {/* Instrumentos Card */}
+            <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 border-[#E8D5C4] shadow-lg hover:scale-105 min-h-[400px] flex flex-col bg-white">
+              <CardHeader className="pb-6 flex-shrink-0">
+                <div className="mx-auto w-20 h-20 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-6 border-4 border-[#E8D5C4]">
+                  <Music className="w-10 h-10 text-[#9A784F]" />
+                </div>
+                <CardTitle className="text-2xl md:text-3xl mb-3 text-[#362511]">Instrumentos</CardTitle>
+                <CardDescription className="text-lg md:text-xl text-[#65350F] font-medium">
+                  Conoce los instrumentos musicales disponibles
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow flex items-end">
+                <Link href="/inicio/instrumentos" className="w-full">
+                  <Button className="w-full bg-[#65350F] hover:bg-[#362511] text-lg py-4 h-auto text-white font-bold shadow-lg transition-colors duration-200">
+                    Explorar Instrumentos
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Historia Card */}
+            <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 border-[#E8D5C4] shadow-lg hover:scale-105 min-h-[400px] flex flex-col bg-white">
+              <CardHeader className="pb-6 flex-shrink-0">
+                <div className="mx-auto w-20 h-20 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-6 border-4 border-[#E8D5C4]">
+                  <History className="w-10 h-10 text-[#795C34]" />
+                </div>
+                <CardTitle className="text-2xl md:text-3xl mb-3 text-[#362511]">Nuestra Historia</CardTitle>
+                <CardDescription className="text-lg md:text-xl text-[#65350F] font-medium">
+                  Descubre la historia del Sistema Nacional de Orquestas
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow flex items-end">
+                <Link href="#historia" className="w-full">
+                  <Button className="w-full bg-[#65350F] hover:bg-[#362511] text-lg py-4 h-auto text-white font-bold shadow-lg transition-colors duration-200">
+                    Conocer Historia
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Inscripción Card */}
+            <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 border-[#E8D5C4] shadow-lg hover:scale-105 min-h-[400px] flex flex-col bg-white">
+              <CardHeader className="pb-6 flex-shrink-0">
+                <div className="mx-auto w-20 h-20 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-6 border-4 border-[#E8D5C4]">
+                  <UserPlus className="w-10 h-10 text-[#65350F]" />
+                </div>
+                <CardTitle className="text-2xl md:text-3xl mb-3 text-[#362511]">Inscripción</CardTitle>
+                <CardDescription className="text-lg md:text-xl text-[#65350F] font-medium">
+                  Únete a nuestra comunidad musical
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow flex items-end">
+                <Button 
+                  className="w-full bg-[#65350F] hover:bg-[#362511] text-lg py-4 h-auto text-white font-bold shadow-lg transition-colors duration-200"
+                  onClick={() => setShowRegistrationModal(true)}
+                >
+                  Inscribirse Ahora
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sección de Tabla de Estudiantes - Visible SOLO para administradores */}
+          {isAdmin && (
+            <div className="max-w-4xl mx-auto mt-16 text-center">
+              <Card className="border-2 border-[#65350F] bg-[#F8F4F0] min-h-[200px] flex flex-col justify-center shadow-lg">
+                <CardHeader className="pb-6">
+                  <div className="mx-auto w-16 h-16 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-4 border-4 border-[#E8D5C4]">
+                    <Table className="w-8 h-8 text-[#65350F]" />
+                  </div>
+                  <CardTitle className="text-2xl md:text-3xl text-[#362511] mb-3">Tabla de Estudiantes</CardTitle>
+                  <CardDescription className="text-lg md:text-xl text-[#65350F] font-medium">
+                    Visualiza todos los estudiantes registrados en el sistema
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link href="/tabla">
+                    <Button className="bg-[#65350F] hover:bg-[#362511] text-white text-lg py-4 px-12 font-bold shadow-lg transition-colors duration-200">
+                      <Table className="w-5 h-5 mr-3" />
+                      Ver Tabla de Estudiantes
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Historia Section */}
+      <section 
+        id="historia" 
+        className="relative py-20 md:py-32 text-white overflow-hidden"
+        style={{
+          backgroundImage: 'url(/images/fondo.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        {/* Overlay para mejor legibilidad */}
+        <div className="absolute inset-0 bg-black/60"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-6xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 text-[#F8F4F0] drop-shadow-lg">
+              Historia del Sistema
+            </h2>
+            
+            {/* Divider */}
+            <div className="flex items-center justify-center mb-12 md:mb-16">
+              <div className="w-16 h-1 bg-white"></div>
+              <div className="mx-4 md:mx-6">
+                <Star className="text-white w-6 h-6 md:w-8 md:h-8" />
+              </div>
+              <div className="w-16 h-1 bg-white"></div>
+            </div>
+
+            <div className="text-base md:text-lg lg:text-xl leading-relaxed space-y-6 md:space-y-8 text-left bg-white/10 backdrop-blur-sm rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-12">
+              <p className="text-lg md:text-xl text-white font-medium">
+                El Sistema Nacional de Orquestas y Coros Juveniles e Infantiles de Venezuela, 
+                conocido como <strong className="text-[#F8F4F0]">&quot;El Sistema&quot;</strong>, es un programa de educación musical fundado 
+                en 1975 por el maestro José Antonio Abreu.
+              </p>
+              
+              <p className="text-lg md:text-xl text-white font-medium">
+                Su misión es sistematizar la instrucción y práctica colectiva e individual 
+                de la música a través de orquestas sinfónicas y coros, como instrumentos 
+                de organización social y desarrollo humanístico. Este modelo ha sido replicado 
+                en más de 60 países alrededor del mundo.
+              </p>
+
+              <blockquote className="italic border-l-4 border-[#F8F4F0] pl-4 md:pl-8 my-8 md:my-12 text-xl md:text-2xl text-[#F8F4F0] text-center font-medium">
+                &quot;La música es un instrumento irremplazable para unir a las personas.&quot;
+                <footer className="mt-3 md:mt-4 text-white text-lg md:text-xl">- José Antonio Abreu</footer>
+              </blockquote>
+
+              <p className="text-lg md:text-xl text-white font-medium">
+                Hoy en día, El Sistema atiende a más de 800,000 niños y jóvenes en todo el territorio 
+                venezolano, demostrando que la música puede ser una poderosa herramienta de 
+                transformación social y desarrollo humano.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-[#362511] text-white py-12 md:py-16 border-t border-[#795C34]">
+        <div className="container mx-auto px-4">
+          <div className="border-t border-[#795C34] mt-8 md:mt-12 pt-6 md:pt-8 text-center text-[#D4B8A4]">
+            <p className="text-sm md:text-lg">&copy; 2024 Sistema Nacional de Orquestas. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </footer>
     </div>
+  );
+}
+
+// Componente principal que provee la sesión
+export default function HomePage() {
+  return (
+    <HomeContent />
   );
 }
