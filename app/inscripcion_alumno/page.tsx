@@ -1763,17 +1763,23 @@ function ParroquiaSelect({
 // COMPONENTE PRINCIPAL
 // ============================================
 
+// *** LISTA ACTUALIZADA DE AGRUPACIONES (ORQUESTA ACTUAL) ***
 const agrupacionesMusicales: string[] = [
-  "Orquesta Sinfónica",
-  "Orquesta Infantil",
-  "Orquesta Juvenil",
-  "Banda Sinfónica",
-  "Coro",
-  "Ensemble de Cuerdas",
-  "Ensemble de Vientos",
-  "Orquesta de Cámara",
-  "Combo Jazz",
-  "Orquesta Típica"
+  "Iniciación Musical",
+  "Coro Infantil",
+  "Coro Juvenil Eduardo Plaza",
+  "Coro Adulto",
+  "Programa Educación Especial (P.E.E)",
+  "Orquesta Afrovenezolana Infantil",
+  "Orquesta Afrovenezolana Regional Otilio Galíndez",
+  "Orquesta Alma Llanera Infantil",
+  "Orquesta Alma Llanera Regional Cristóbal Jiménez",
+  "Orquesta Sinfónica Beethoven",
+  "Orquesta Sinfónica Infantil",
+  "Orquesta Sinfónica Regional Juvenil Juan Bautista Plaza",
+  "Danza",
+  "Piano",
+  "Orquesta Latino Caribeña"
 ];
 
 const gradosEscolares: string[] = [
@@ -2121,7 +2127,7 @@ export default function RegistroPage() {
     }
     
     if (!formData.agrupacionPertenece) {
-      newErrors.agrupacionPertenece = 'La agrupación actual es obligatoria';
+      newErrors.agrupacionPertenece = 'La orquesta actual es obligatoria'; // *** Mensaje actualizado ***
     }
 
     if (!formData.instrumentoPrincipal) {
@@ -2606,13 +2612,14 @@ export default function RegistroPage() {
                     )}
                   </div>
 
+                  {/* *** CAMBIO PRINCIPAL: Orquesta Actual *** */}
                   <div className="space-y-2">
                     <Label htmlFor="agrupacionPertenece" className="text-sm font-bold text-[#362511]">
-                      Agrupación Actual <span className="text-red-500">*</span>
+                      Orquesta Actual <span className="text-red-500">*</span>
                     </Label>
                     <Select value={formData.agrupacionPertenece} onValueChange={(value: string) => handleChange('agrupacionPertenece', value)}>
                       <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.agrupacionPertenece ? 'border-red-500' : ''}`}>
-                        <SelectValue placeholder="Seleccione la agrupación" />
+                        <SelectValue placeholder="Seleccione la orquesta" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-[#E8D5C4]">
                         {agrupacionesMusicales.map((agrupacion: string) => (
