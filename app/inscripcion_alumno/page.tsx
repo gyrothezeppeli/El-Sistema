@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -527,199 +527,6 @@ interface FormData {
 // COMPONENTES PERSONALIZADOS
 // ============================================
 
-function NucleoSelect({ value, onValueChange, error }: { value: string; onValueChange: (value: string) => void; error?: string }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-
-  const nucleos = [
-    "Baruta", "BCV", "Cantv-Ccs", "Caricuao", "Carmelitas", 
-    "Centro académico regional 23 de enero", "Centro académico regional La Rinconada", 
-    "Centro académico regional La Rinconada (escuela venezolana de planificación)", 
-    "Centro académico regional Los Chorros", "Centro académico regional Montalbán", 
-    "Centro académico regional San Agustín", "Centro de formación coral inocente Carreño", 
-    "Chacao libertador", "Chapellín", "CICPC", "Ciudad caribia", "Colonia Tovar", 
-    "Comandancia G.N", "Convenio Vicepresidencia", "Corpoelec", "Cultura Chacao", 
-    "Chacao U.E.N el libertador (Cultura Chacao)", "Chacao U.E.N el libertador (Carlos Soublette)", 
-    "el Hatillo", "Entidad de atención Dr. José Gregorio Hernández", "Fuerte Tiuna", 
-    "Galipán", "gran Colombia", "junín", "junco", "la Carlota", "la Ceiba", "la Hoyada", 
-    "la pastora", "La Vega", "lince", "los rosales", "Miraflores", "penitenciario ciudad Caracas el cementerio", 
-    "penitenciario coche", "petare", "quebrada Honda", "quinta Marilina", "Ruiz Pineda", 
-    "Santa Cruz del este", "Santa Rosa", "Sarría", "seniat", "Soublette chacao", "TSJ", 
-    "universidad Santa Rosa"
-  ];
-
-  const nucleosFiltrados = useMemo(() => {
-    if (!searchTerm) return nucleos;
-    return nucleos.filter(nucleo => nucleo.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [searchTerm, nucleos]);
-
-  return (
-    <div className="space-y-2">
-      <Label htmlFor="nucleo" className="text-sm font-bold text-[#362511]">
-        Núcleo <span className="text-red-500">*</span>
-      </Label>
-      <Select value={value} onValueChange={onValueChange} onOpenChange={setIsOpen}>
-        <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${error ? 'border-red-500' : ''}`}>
-          <SelectValue placeholder="Seleccione el núcleo" />
-        </SelectTrigger>
-        <SelectContent className="bg-white border-[#E8D5C4] max-h-60 overflow-y-auto">
-          <div className="sticky top-0 bg-white p-2 border-b border-[#E8D5C4] z-10">
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-[#A67C52] w-4 h-4" />
-              <Input
-                placeholder="Buscar núcleo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 pr-3 py-1 h-8 text-sm border-[#E8D5C4] focus:border-[#9A784F]"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-          </div>
-          
-          <div className="px-3 py-1 text-xs text-[#8B6B4D] bg-[#F8F4EF] border-b border-[#E8D5C4]">
-            {nucleosFiltrados.length} de {nucleos.length} núcleos
-          </div>
-
-          {nucleosFiltrados.length > 0 ? (
-            nucleosFiltrados.map((nucleo) => (
-              <SelectItem key={nucleo} value={nucleo} className="text-sm">
-                {nucleo}
-              </SelectItem>
-            ))
-          ) : (
-            <div className="px-3 py-2 text-sm text-[#8B6B4D] text-center">
-              No se encontraron núcleos
-            </div>
-          )}
-        </SelectContent>
-      </Select>
-      {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
-    </div>
-  );
-}
-
-function EstadoSelect({ value, onValueChange, error }: { value: string; onValueChange: (value: string) => void; error?: string }) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor="lugarNacimiento" className="text-sm font-bold text-[#362511]">
-        Lugar de Nacimiento (Estado) <span className="text-red-500">*</span>
-      </Label>
-      <Select value={value} onValueChange={onValueChange}>
-        <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${error ? 'border-red-500' : ''}`}>
-          <SelectValue placeholder="Seleccione el estado" />
-        </SelectTrigger>
-        <SelectContent className="bg-white border-[#E8D5C4] max-h-60 overflow-y-auto">
-          {VENEZUELA_DATA.map((estado) => (
-            <SelectItem key={estado.nombre} value={estado.nombre}>
-              {estado.nombre}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
-    </div>
-  );
-}
-
-function MunicipioSelect({ estadoSeleccionado, value, onValueChange, error, disabled }: { estadoSeleccionado: string; value: string; onValueChange: (value: string) => void; error?: string; disabled: boolean }) {
-  const municipios = useMemo(() => {
-    if (!estadoSeleccionado) return [];
-    const estado = VENEZUELA_DATA.find(e => e.nombre === estadoSeleccionado);
-    return estado ? estado.municipios.map(m => m.nombre) : [];
-  }, [estadoSeleccionado]);
-
-  return (
-    <div className="space-y-2">
-      <Label htmlFor="municipio" className="text-sm font-bold text-[#362511]">
-        Municipio <span className="text-red-500">*</span>
-      </Label>
-      <Select value={value} onValueChange={onValueChange} disabled={disabled || !estadoSeleccionado}>
-        <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${error ? 'border-red-500' : ''} ${disabled || !estadoSeleccionado ? 'opacity-50' : ''}`}>
-          <SelectValue placeholder={!estadoSeleccionado ? "Primero seleccione un estado" : "Seleccione el municipio"} />
-        </SelectTrigger>
-        <SelectContent className="bg-white border-[#E8D5C4] max-h-60 overflow-y-auto">
-          {municipios.map((municipio) => (
-            <SelectItem key={municipio} value={municipio}>
-              {municipio}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
-    </div>
-  );
-}
-
-function ParroquiaSelect({ estadoSeleccionado, municipioSeleccionado, value, onValueChange, error, disabled }: { estadoSeleccionado: string; municipioSeleccionado: string; value: string; onValueChange: (value: string) => void; error?: string; disabled: boolean }) {
-  const parroquias = useMemo(() => {
-    if (!estadoSeleccionado || !municipioSeleccionado) return [];
-    const estado = VENEZUELA_DATA.find(e => e.nombre === estadoSeleccionado);
-    if (!estado) return [];
-    const municipio = estado.municipios.find(m => m.nombre === municipioSeleccionado);
-    return municipio ? municipio.parroquias : [];
-  }, [estadoSeleccionado, municipioSeleccionado]);
-
-  return (
-    <div className="space-y-2">
-      <Label htmlFor="parroquia" className="text-sm font-bold text-[#362511]">
-        Parroquia <span className="text-red-500">*</span>
-      </Label>
-      <Select value={value} onValueChange={onValueChange} disabled={disabled || !municipioSeleccionado}>
-        <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${error ? 'border-red-500' : ''} ${disabled || !municipioSeleccionado ? 'opacity-50' : ''}`}>
-          <SelectValue placeholder={!municipioSeleccionado ? "Primero seleccione un municipio" : "Seleccione la parroquia"} />
-        </SelectTrigger>
-        <SelectContent className="bg-white border-[#E8D5C4] max-h-60 overflow-y-auto">
-          {parroquias.map((parroquia) => (
-            <SelectItem key={parroquia} value={parroquia}>
-              {parroquia}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
-    </div>
-  );
-}
-
-// ============================================
-// COMPONENTE PRINCIPAL
-// ============================================
-
-const agrupacionesMusicales = [
-  "Iniciación Musical",
-  "Coro Infantil",
-  "Coro Juvenil Eduardo Plaza",
-  "Coro Adulto",
-  "Programa Educación Especial (P.E.E)",
-  "Orquesta Afrovenezolana Infantil",
-  "Orquesta Afrovenezolana Regional Otilio Galíndez",
-  "Orquesta Alma Llanera Infantil",
-  "Orquesta Alma Llanera Regional Cristóbal Jiménez",
-  "Orquesta Sinfónica Beethoven",
-  "Orquesta Sinfónica Infantil",
-  "Orquesta Sinfónica Regional Juvenil Juan Bautista Plaza",
-  "Danza",
-  "Piano",
-  "Orquesta Latino Caribeña"
-];
-
-const gradosEscolares = [
-  "1er Grado", "2do Grado", "3er Grado", "4to Grado", "5to Grado", "6to Grado",
-  "1er Año", "2do Año", "3er Año", "4to Año", "5to Año"
-];
-
-const instrumentosMusicales = ["Violín", "Viola", "Violonchelo", "Contrabajo"];
-
-const guardarEnLocalStorage = (key: string, value: string) => {
-  try {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(key, value);
-    }
-  } catch (error) {
-    console.error('Error guardando en localStorage:', error);
-  }
-};
-
 // Componente de carga
 function LoadingFallback() {
   return (
@@ -732,18 +539,11 @@ function LoadingFallback() {
   );
 }
 
-// Componente principal envuelto en Suspense
+// Componente principal
 export default function RegistroPage() {
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <RegistroContent />
-    </Suspense>
-  );
-}
-
-function RegistroContent() {
-  const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+  
   const [formData, setFormData] = useState<FormData>({
     nombres: '',
     apellidos: '',
@@ -787,6 +587,7 @@ function RegistroContent() {
     setMounted(true);
   }, []);
 
+  // Función para calcular edad
   const calcularEdad = useCallback((fechaNacimiento: string): string => {
     if (!fechaNacimiento) return '';
     try {
@@ -805,6 +606,7 @@ function RegistroContent() {
     }
   }, []);
 
+  // Efecto para actualizar edad
   useEffect(() => {
     if (formData.fechaNacimiento) {
       const nuevaEdad = calcularEdad(formData.fechaNacimiento);
@@ -814,6 +616,7 @@ function RegistroContent() {
     }
   }, [formData.fechaNacimiento, calcularEdad]);
 
+  // Efectos para dependencias
   useEffect(() => {
     if (formData.lugarNacimiento) {
       setFormData(prev => ({ ...prev, municipio: '', parroquia: '' }));
@@ -826,6 +629,7 @@ function RegistroContent() {
     }
   }, [formData.municipio]);
 
+  // Validaciones
   const validarSoloLetras = (valor: string) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(valor);
   const validarSoloNumeros = (valor: string) => /^\d+$/.test(valor);
   const validarEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -1034,7 +838,7 @@ function RegistroContent() {
 
         if (!estudianteId) throw new Error('La respuesta del servidor no contiene el ID del estudiante');
 
-        guardarEnLocalStorage('ultimoEstudianteId', estudianteId);
+        localStorage.setItem('ultimoEstudianteId', estudianteId);
         alert('✅ Registro de estudiante completado exitosamente. Ahora complete los datos de los representantes.');
         router.push(`/inscripcion_representantes?estudianteId=${estudianteId}`);
         
@@ -1054,7 +858,45 @@ function RegistroContent() {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: currentYear - 1990 + 1 }, (_, i) => (currentYear - i).toString());
 
-  if (!mounted) return <LoadingFallback />;
+  const agrupacionesMusicales = [
+    "Iniciación Musical", "Coro Infantil", "Coro Juvenil Eduardo Plaza", "Coro Adulto",
+    "Programa Educación Especial (P.E.E)", "Orquesta Afrovenzolana Infantil",
+    "Orquesta Afrovenezolana Regional Otilio Galíndez", "Orquesta Alma Llanera Infantil",
+    "Orquesta Alma Llanera Regional Cristóbal Jiménez", "Orquesta Sinfónica Beethoven",
+    "Orquesta Sinfónica Infantil", "Orquesta Sinfónica Regional Juvenil Juan Bautista Plaza",
+    "Danza", "Piano", "Orquesta Latino Caribeña"
+  ];
+
+  const gradosEscolares = [
+    "1er Grado", "2do Grado", "3er Grado", "4to Grado", "5to Grado", "6to Grado",
+    "1er Año", "2do Año", "3er Año", "4to Año", "5to Año"
+  ];
+
+  const instrumentosMusicales = ["Violín", "Viola", "Violonchelo", "Contrabajo"];
+
+  const nucleosLista = [
+    "Baruta", "BCV", "Cantv-Ccs", "Caricuao", "Carmelitas", 
+    "Centro académico regional 23 de enero", "Centro académico regional La Rinconada", 
+    "Centro académico regional Los Chorros", "Centro académico regional Montalbán", 
+    "Centro académico regional San Agustín", "Centro de formación coral inocente Carreño", 
+    "Chacao libertador", "Chapellín", "CICPC", "Ciudad caribia", "Colonia Tovar", 
+    "Comandancia G.N", "Convenio Vicepresidencia", "Corpoelec", "Cultura Chacao", 
+    "el Hatillo", "Entidad de atención Dr. José Gregorio Hernández", "Fuerte Tiuna", 
+    "Galipán", "gran Colombia", "junín", "junco", "la Carlota", "la Ceiba", "la Hoyada", 
+    "la pastora", "La Vega", "lince", "los rosales", "Miraflores", "petare", 
+    "quebrada Honda", "quinta Marilina", "Ruiz Pineda", "Santa Cruz del este", 
+    "Santa Rosa", "Sarría", "seniat", "Soublette chacao", "TSJ", "universidad Santa Rosa"
+  ];
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const nucleosFiltrados = nucleosLista.filter(nucleo =>
+    nucleo.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (!mounted) {
+    return <LoadingFallback />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8F4F0] via-[#E8D5C4] to-[#D4B8A4] py-8">
@@ -1111,82 +953,121 @@ function RegistroContent() {
                   Información Personal
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="nombres" className="text-sm font-bold text-[#362511]">Nombres <span className="text-red-500">*</span></Label>
-                    <Input id="nombres" value={formData.nombres} onChange={(e) => handleChange('nombres', e.target.value)} placeholder="Ingrese los nombres" className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.nombres ? 'border-red-500' : ''}`} />
-                    {errors.nombres && <p className="text-red-500 text-sm font-medium">{errors.nombres}</p>}
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Nombres <span className="text-red-500">*</span></Label>
+                    <Input value={formData.nombres} onChange={(e) => handleChange('nombres', e.target.value)} placeholder="Ingrese los nombres" className={errors.nombres ? 'border-red-500' : ''} />
+                    {errors.nombres && <p className="text-red-500 text-sm mt-1">{errors.nombres}</p>}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="apellidos" className="text-sm font-bold text-[#362511]">Apellidos <span className="text-red-500">*</span></Label>
-                    <Input id="apellidos" value={formData.apellidos} onChange={(e) => handleChange('apellidos', e.target.value)} placeholder="Ingrese los apellidos" className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.apellidos ? 'border-red-500' : ''}`} />
-                    {errors.apellidos && <p className="text-red-500 text-sm font-medium">{errors.apellidos}</p>}
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Apellidos <span className="text-red-500">*</span></Label>
+                    <Input value={formData.apellidos} onChange={(e) => handleChange('apellidos', e.target.value)} placeholder="Ingrese los apellidos" className={errors.apellidos ? 'border-red-500' : ''} />
+                    {errors.apellidos && <p className="text-red-500 text-sm mt-1">{errors.apellidos}</p>}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="cedulaIdentidad" className="text-sm font-bold text-[#362511]">Cédula de Identidad <span className="text-red-500">*</span></Label>
-                    <Input id="cedulaIdentidad" value={formData.cedulaIdentidad} onChange={(e) => handleChange('cedulaIdentidad', e.target.value)} placeholder="Ej: 12345678" className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.cedulaIdentidad ? 'border-red-500' : ''}`} maxLength={8} />
-                    {errors.cedulaIdentidad && <p className="text-red-500 text-sm font-medium">{errors.cedulaIdentidad}</p>}
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Cédula de Identidad <span className="text-red-500">*</span></Label>
+                    <Input value={formData.cedulaIdentidad} onChange={(e) => handleChange('cedulaIdentidad', e.target.value)} placeholder="Ej: 12345678" maxLength={8} className={errors.cedulaIdentidad ? 'border-red-500' : ''} />
+                    {errors.cedulaIdentidad && <p className="text-red-500 text-sm mt-1">{errors.cedulaIdentidad}</p>}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="fechaNacimiento" className="text-sm font-bold text-[#362511]">Fecha de Nacimiento <span className="text-red-500">*</span></Label>
-                    <Input id="fechaNacimiento" type="date" value={formData.fechaNacimiento} onChange={(e) => handleChange('fechaNacimiento', e.target.value)} className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.fechaNacimiento ? 'border-red-500' : ''}`} />
-                    {errors.fechaNacimiento && <p className="text-red-500 text-sm font-medium">{errors.fechaNacimiento}</p>}
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Fecha de Nacimiento <span className="text-red-500">*</span></Label>
+                    <Input type="date" value={formData.fechaNacimiento} onChange={(e) => handleChange('fechaNacimiento', e.target.value)} className={errors.fechaNacimiento ? 'border-red-500' : ''} />
+                    {errors.fechaNacimiento && <p className="text-red-500 text-sm mt-1">{errors.fechaNacimiento}</p>}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="edad" className="text-sm font-bold text-[#362511]">Edad</Label>
-                    <Input id="edad" value={formData.edad} readOnly placeholder="Se calcula automáticamente" className="bg-[#F8F4F0] border-[#E8D5C4] text-[#362511]" />
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Edad</Label>
+                    <Input value={formData.edad} readOnly placeholder="Se calcula automáticamente" className="bg-[#F8F4F0]" />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="sexo" className="text-sm font-bold text-[#362511]">Sexo <span className="text-red-500">*</span></Label>
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Sexo <span className="text-red-500">*</span></Label>
                     <Select value={formData.sexo} onValueChange={(value) => handleChange('sexo', value)}>
-                      <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.sexo ? 'border-red-500' : ''}`}>
+                      <SelectTrigger className={errors.sexo ? 'border-red-500' : ''}>
                         <SelectValue placeholder="Seleccione su sexo" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-[#E8D5C4]">
+                      <SelectContent>
                         <SelectItem value="M">Masculino</SelectItem>
                         <SelectItem value="F">Femenino</SelectItem>
                       </SelectContent>
                     </Select>
-                    {errors.sexo && <p className="text-red-500 text-sm font-medium">{errors.sexo}</p>}
+                    {errors.sexo && <p className="text-red-500 text-sm mt-1">{errors.sexo}</p>}
                   </div>
                 </div>
 
                 <div className="mt-4">
-                  <EstadoSelect value={formData.lugarNacimiento} onValueChange={(value) => handleChange('lugarNacimiento', value)} error={errors.lugarNacimiento} />
+                  <Label className="text-sm font-bold text-[#362511]">Lugar de Nacimiento (Estado) <span className="text-red-500">*</span></Label>
+                  <Select value={formData.lugarNacimiento} onValueChange={(value) => handleChange('lugarNacimiento', value)}>
+                    <SelectTrigger className={errors.lugarNacimiento ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Seleccione el estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {VENEZUELA_DATA.map((estado) => (
+                        <SelectItem key={estado.nombre} value={estado.nombre}>{estado.nombre}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.lugarNacimiento && <p className="text-red-500 text-sm mt-1">{errors.lugarNacimiento}</p>}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <MunicipioSelect estadoSeleccionado={formData.lugarNacimiento} value={formData.municipio} onValueChange={(value) => handleChange('municipio', value)} error={errors.municipio} disabled={!formData.lugarNacimiento} />
-                  <ParroquiaSelect estadoSeleccionado={formData.lugarNacimiento} municipioSeleccionado={formData.municipio} value={formData.parroquia} onValueChange={(value) => handleChange('parroquia', value)} error={errors.parroquia} disabled={!formData.municipio} />
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Municipio <span className="text-red-500">*</span></Label>
+                    <Select value={formData.municipio} onValueChange={(value) => handleChange('municipio', value)} disabled={!formData.lugarNacimiento}>
+                      <SelectTrigger className={errors.municipio ? 'border-red-500' : ''}>
+                        <SelectValue placeholder={!formData.lugarNacimiento ? "Primero seleccione un estado" : "Seleccione el municipio"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {formData.lugarNacimiento && VENEZUELA_DATA.find(e => e.nombre === formData.lugarNacimiento)?.municipios.map((m) => (
+                          <SelectItem key={m.nombre} value={m.nombre}>{m.nombre}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.municipio && <p className="text-red-500 text-sm mt-1">{errors.municipio}</p>}
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Parroquia <span className="text-red-500">*</span></Label>
+                    <Select value={formData.parroquia} onValueChange={(value) => handleChange('parroquia', value)} disabled={!formData.municipio}>
+                      <SelectTrigger className={errors.parroquia ? 'border-red-500' : ''}>
+                        <SelectValue placeholder={!formData.municipio ? "Primero seleccione un municipio" : "Seleccione la parroquia"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {formData.municipio && VENEZUELA_DATA.find(e => e.nombre === formData.lugarNacimiento)
+                          ?.municipios.find(m => m.nombre === formData.municipio)?.parroquias.map((p) => (
+                            <SelectItem key={p} value={p}>{p}</SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.parroquia && <p className="text-red-500 text-sm mt-1">{errors.parroquia}</p>}
+                  </div>
                 </div>
 
-                <div className="mt-4 space-y-2">
-                  <Label htmlFor="direccionHabitacion" className="text-sm font-bold text-[#362511]">Dirección de Habitación <span className="text-red-500">*</span></Label>
-                  <Input id="direccionHabitacion" value={formData.direccionHabitacion} onChange={(e) => handleChange('direccionHabitacion', e.target.value)} placeholder="Ingrese su dirección completa" className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.direccionHabitacion ? 'border-red-500' : ''}`} />
-                  {errors.direccionHabitacion && <p className="text-red-500 text-sm font-medium">{errors.direccionHabitacion}</p>}
+                <div className="mt-4">
+                  <Label className="text-sm font-bold text-[#362511]">Dirección de Habitación <span className="text-red-500">*</span></Label>
+                  <Input value={formData.direccionHabitacion} onChange={(e) => handleChange('direccionHabitacion', e.target.value)} placeholder="Ingrese su dirección completa" className={errors.direccionHabitacion ? 'border-red-500' : ''} />
+                  {errors.direccionHabitacion && <p className="text-red-500 text-sm mt-1">{errors.direccionHabitacion}</p>}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="numeroTelefonoCelular" className="text-sm font-bold text-[#362511]">Teléfono Celular <span className="text-red-500">*</span></Label>
-                    <Input id="numeroTelefonoCelular" value={formData.numeroTelefonoCelular} onChange={(e) => handleChange('numeroTelefonoCelular', e.target.value)} placeholder="Ej: 04121234567" className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.numeroTelefonoCelular ? 'border-red-500' : ''}`} maxLength={11} />
-                    {errors.numeroTelefonoCelular && <p className="text-red-500 text-sm font-medium">{errors.numeroTelefonoCelular}</p>}
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Teléfono Celular <span className="text-red-500">*</span></Label>
+                    <Input value={formData.numeroTelefonoCelular} onChange={(e) => handleChange('numeroTelefonoCelular', e.target.value)} placeholder="Ej: 04121234567" maxLength={11} className={errors.numeroTelefonoCelular ? 'border-red-500' : ''} />
+                    {errors.numeroTelefonoCelular && <p className="text-red-500 text-sm mt-1">{errors.numeroTelefonoCelular}</p>}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="numeroTelefonoLocal" className="text-sm font-bold text-[#362511]">Teléfono Local (Opcional)</Label>
-                    <Input id="numeroTelefonoLocal" value={formData.numeroTelefonoLocal} onChange={(e) => handleChange('numeroTelefonoLocal', e.target.value)} placeholder="Ej: 02121234567" className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.numeroTelefonoLocal ? 'border-red-500' : ''}`} maxLength={11} />
-                    {errors.numeroTelefonoLocal && <p className="text-red-500 text-sm font-medium">{errors.numeroTelefonoLocal}</p>}
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Teléfono Local (Opcional)</Label>
+                    <Input value={formData.numeroTelefonoLocal} onChange={(e) => handleChange('numeroTelefonoLocal', e.target.value)} placeholder="Ej: 02121234567" maxLength={11} className={errors.numeroTelefonoLocal ? 'border-red-500' : ''} />
+                    {errors.numeroTelefonoLocal && <p className="text-red-500 text-sm mt-1">{errors.numeroTelefonoLocal}</p>}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="correoElectronico" className="text-sm font-bold text-[#362511]">Correo Electrónico <span className="text-red-500">*</span></Label>
-                    <Input id="correoElectronico" type="email" value={formData.correoElectronico} onChange={(e) => handleChange('correoElectronico', e.target.value)} placeholder="ejemplo@correo.com" className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.correoElectronico ? 'border-red-500' : ''}`} />
-                    {errors.correoElectronico && <p className="text-red-500 text-sm font-medium">{errors.correoElectronico}</p>}
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Correo Electrónico <span className="text-red-500">*</span></Label>
+                    <Input type="email" value={formData.correoElectronico} onChange={(e) => handleChange('correoElectronico', e.target.value)} placeholder="ejemplo@correo.com" className={errors.correoElectronico ? 'border-red-500' : ''} />
+                    {errors.correoElectronico && <p className="text-red-500 text-sm mt-1">{errors.correoElectronico}</p>}
                   </div>
                 </div>
               </div>
@@ -1198,46 +1079,69 @@ function RegistroContent() {
                   Información Musical
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <NucleoSelect value={formData.nucleo} onValueChange={(value) => handleChange('nucleo', value)} error={errors.nucleo} />
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Núcleo <span className="text-red-500">*</span></Label>
+                    <Select value={formData.nucleo} onValueChange={(value) => handleChange('nucleo', value)}>
+                      <SelectTrigger className={errors.nucleo ? 'border-red-500' : ''}>
+                        <SelectValue placeholder="Seleccione el núcleo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <div className="sticky top-0 bg-white p-2 border-b">
+                          <div className="relative">
+                            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <Input placeholder="Buscar núcleo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-8 h-8" />
+                          </div>
+                        </div>
+                        {nucleosFiltrados.map((nucleo) => (
+                          <SelectItem key={nucleo} value={nucleo}>{nucleo}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.nucleo && <p className="text-red-500 text-sm mt-1">{errors.nucleo}</p>}
+                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="añoInicio" className="text-sm font-bold text-[#362511]">Año en que Inició <span className="text-red-500">*</span></Label>
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Año en que Inició <span className="text-red-500">*</span></Label>
                     <Select value={formData.añoInicio} onValueChange={(value) => handleChange('añoInicio', value)}>
-                      <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.añoInicio ? 'border-red-500' : ''}`}>
+                      <SelectTrigger className={errors.añoInicio ? 'border-red-500' : ''}>
                         <SelectValue placeholder="Seleccione el año" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-[#E8D5C4]">
-                        {years.map((year) => <SelectItem key={year} value={year}>{year}</SelectItem>)}
+                      <SelectContent>
+                        {years.map((year) => (
+                          <SelectItem key={year} value={year}>{year}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-                    {errors.añoInicio && <p className="text-red-500 text-sm font-medium">{errors.añoInicio}</p>}
+                    {errors.añoInicio && <p className="text-red-500 text-sm mt-1">{errors.añoInicio}</p>}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="agrupacionPertenece" className="text-sm font-bold text-[#362511]">Orquesta Actual <span className="text-red-500">*</span></Label>
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Orquesta Actual <span className="text-red-500">*</span></Label>
                     <Select value={formData.agrupacionPertenece} onValueChange={(value) => handleChange('agrupacionPertenece', value)}>
-                      <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.agrupacionPertenece ? 'border-red-500' : ''}`}>
+                      <SelectTrigger className={errors.agrupacionPertenece ? 'border-red-500' : ''}>
                         <SelectValue placeholder="Seleccione la orquesta" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-[#E8D5C4]">
-                        {agrupacionesMusicales.map((agrupacion) => <SelectItem key={agrupacion} value={agrupacion}>{agrupacion}</SelectItem>)}
+                      <SelectContent>
+                        {agrupacionesMusicales.map((agrupacion) => (
+                          <SelectItem key={agrupacion} value={agrupacion}>{agrupacion}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-                    {errors.agrupacionPertenece && <p className="text-red-500 text-sm font-medium">{errors.agrupacionPertenece}</p>}
+                    {errors.agrupacionPertenece && <p className="text-red-500 text-sm mt-1">{errors.agrupacionPertenece}</p>}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="instrumentoPrincipal" className="text-sm font-bold text-[#362511]">Instrumento Principal (Opcional)</Label>
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Instrumento Principal (Opcional)</Label>
                     <Select value={formData.instrumentoPrincipal} onValueChange={(value) => handleChange('instrumentoPrincipal', value)}>
-                      <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.instrumentoPrincipal ? 'border-red-500' : ''}`}>
+                      <SelectTrigger>
                         <SelectValue placeholder="Seleccione el instrumento" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-[#E8D5C4]">
-                        <SelectItem value="">Ninguno</SelectItem>
-                        {instrumentosMusicales.map((instrumento) => <SelectItem key={instrumento} value={instrumento}>{instrumento}</SelectItem>)}
+                      <SelectContent>
+                        {instrumentosMusicales.map((instrumento) => (
+                          <SelectItem key={instrumento} value={instrumento}>{instrumento}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-                    {errors.instrumentoPrincipal && <p className="text-red-500 text-sm font-medium">{errors.instrumentoPrincipal}</p>}
                   </div>
                 </div>
 
@@ -1246,8 +1150,12 @@ function RegistroContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {instrumentosMusicales.map((instrumento) => (
                       <div key={instrumento} className="flex items-center space-x-2">
-                        <Checkbox id={`secundario-${instrumento}`} checked={instrumentosSecundariosSeleccionados.includes(instrumento)} onCheckedChange={(checked) => handleInstrumentoSecundarioChange(instrumento, !!checked)} disabled={instrumento === formData.instrumentoPrincipal} className="border-[#E8D5C4] data-[state=checked]:bg-[#9A784F]" />
-                        <Label htmlFor={`secundario-${instrumento}`} className={`text-sm font-medium ${instrumento === formData.instrumentoPrincipal ? 'text-gray-400 cursor-not-allowed' : 'text-[#362511]'}`}>
+                        <Checkbox
+                          checked={instrumentosSecundariosSeleccionados.includes(instrumento)}
+                          onCheckedChange={(checked) => handleInstrumentoSecundarioChange(instrumento, !!checked)}
+                          disabled={instrumento === formData.instrumentoPrincipal}
+                        />
+                        <Label className={`text-sm ${instrumento === formData.instrumentoPrincipal ? 'text-gray-400' : 'text-[#362511]'}`}>
                           {instrumento} {instrumento === formData.instrumentoPrincipal && ' (Principal)'}
                         </Label>
                       </div>
@@ -1255,9 +1163,9 @@ function RegistroContent() {
                   </div>
                 </div>
 
-                <div className="mt-4 space-y-2">
-                  <Label htmlFor="nombreAgrupacionesPertenecio" className="text-sm font-bold text-[#362511]">Agrupaciones a las que ha pertenecido anteriormente</Label>
-                  <Input id="nombreAgrupacionesPertenecio" value={formData.nombreAgrupacionesPertenecio} onChange={(e) => handleChange('nombreAgrupacionesPertenecio', e.target.value)} placeholder="Ej: Orquesta Infantil, Coro, Ensemble de Cuerdas" className="border-[#E8D5C4] focus:border-[#9A784F]" />
+                <div className="mt-4">
+                  <Label className="text-sm font-bold text-[#362511]">Agrupaciones a las que ha pertenecido anteriormente</Label>
+                  <Input value={formData.nombreAgrupacionesPertenecio} onChange={(e) => handleChange('nombreAgrupacionesPertenecio', e.target.value)} placeholder="Ej: Orquesta Infantil, Coro, Ensemble de Cuerdas" />
                 </div>
               </div>
 
@@ -1268,20 +1176,21 @@ function RegistroContent() {
                   Información Académica
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="nombreColegio" className="text-sm font-bold text-[#362511]">Nombre del Colegio (Opcional)</Label>
-                    <Input id="nombreColegio" value={formData.nombreColegio} onChange={(e) => handleChange('nombreColegio', e.target.value)} placeholder="Ingrese el nombre del colegio" className="border-[#E8D5C4] focus:border-[#9A784F]" />
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Nombre del Colegio (Opcional)</Label>
+                    <Input value={formData.nombreColegio} onChange={(e) => handleChange('nombreColegio', e.target.value)} placeholder="Ingrese el nombre del colegio" />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="gradoCursa" className="text-sm font-bold text-[#362511]">Grado que Cursa (Opcional)</Label>
+                  <div>
+                    <Label className="text-sm font-bold text-[#362511]">Grado que Cursa (Opcional)</Label>
                     <Select value={formData.gradoCursa} onValueChange={(value) => handleChange('gradoCursa', value)}>
-                      <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.gradoCursa ? 'border-red-500' : ''}`}>
+                      <SelectTrigger>
                         <SelectValue placeholder="Seleccione el grado (opcional)" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-[#E8D5C4]">
-                        <SelectItem value="">Ninguno</SelectItem>
-                        {gradosEscolares.map((grado) => <SelectItem key={grado} value={grado}>{grado}</SelectItem>)}
+                      <SelectContent>
+                        {gradosEscolares.map((grado) => (
+                          <SelectItem key={grado} value={grado}>{grado}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -1297,111 +1206,110 @@ function RegistroContent() {
 
                 <div className="mb-6">
                   <Label className="text-sm font-bold text-[#362511] mb-3 block">¿Padece alguna enfermedad?</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-                    {["asma", "alergia", "diabetes", "reumatismo", "otros"].map((enfermedad) => (
-                      <div key={enfermedad} className="flex items-center space-x-2">
-                        <Checkbox id={enfermedad} checked={enfermedadesSeleccionadas.includes(enfermedad)} onCheckedChange={(checked) => handleEnfermedadChange(enfermedad, !!checked)} className="border-[#E8D5C4] data-[state=checked]:bg-[#9A784F]" />
-                        <Label htmlFor={enfermedad} className="text-sm text-[#362511] font-medium capitalize">{enfermedad}</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {["asma", "alergia", "diabetes", "reumatismo", "otros"].map((enf) => (
+                      <div key={enf} className="flex items-center space-x-2">
+                        <Checkbox checked={enfermedadesSeleccionadas.includes(enf)} onCheckedChange={(checked) => handleEnfermedadChange(enf, !!checked)} />
+                        <Label className="capitalize">{enf}</Label>
                       </div>
                     ))}
                   </div>
 
                   {enfermedadesSeleccionadas.includes('otros') && (
                     <div className="mt-3">
-                      <Label htmlFor="otrasEnfermedades" className="text-sm font-bold text-[#362511]">Especifique otras enfermedades</Label>
-                      <Input id="otrasEnfermedades" value={formData.otrasEnfermedades} onChange={(e) => handleChange('otrasEnfermedades', e.target.value)} placeholder="Especifique las otras enfermedades" className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.otrasEnfermedades ? 'border-red-500' : ''}`} />
-                      {errors.otrasEnfermedades && <p className="text-red-500 text-sm font-medium mt-1">{errors.otrasEnfermedades}</p>}
+                      <Label>Especifique otras enfermedades</Label>
+                      <Input value={formData.otrasEnfermedades} onChange={(e) => handleChange('otrasEnfermedades', e.target.value)} placeholder="Especifique las otras enfermedades" />
                     </div>
                   )}
                 </div>
 
                 <div className="mb-6">
-                  <Label htmlFor="condicionAlumno" className="text-sm font-bold text-[#362511] block mb-3">¿El alumno posee alguna condición especial? <span className="text-red-500">*</span></Label>
+                  <Label className="text-sm font-bold text-[#362511] block mb-3">¿El alumno posee alguna condición especial? <span className="text-red-500">*</span></Label>
                   <Select value={formData.condicionAlumno} onValueChange={(value) => handleChange('condicionAlumno', value)}>
-                    <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.condicionAlumno ? 'border-red-500' : ''}`}>
+                    <SelectTrigger className={errors.condicionAlumno ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Seleccione una opción" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-[#E8D5C4]">
+                    <SelectContent>
                       <SelectItem value="si">Sí</SelectItem>
                       <SelectItem value="no">No</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.condicionAlumno && <p className="text-red-500 text-sm font-medium mt-1">{errors.condicionAlumno}</p>}
+                  {errors.condicionAlumno && <p className="text-red-500 text-sm mt-1">{errors.condicionAlumno}</p>}
 
                   {formData.condicionAlumno === 'si' && (
                     <div className="mt-3">
-                      <Label htmlFor="especifiqueCondicion" className="text-sm font-bold text-[#362511]">Especifique la condición <span className="text-red-500">*</span></Label>
-                      <Input id="especifiqueCondicion" value={formData.especifiqueCondicion} onChange={(e) => handleChange('especifiqueCondicion', e.target.value)} placeholder="Describa la condición especial" className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.especifiqueCondicion ? 'border-red-500' : ''}`} />
-                      {errors.especifiqueCondicion && <p className="text-red-500 text-sm font-medium mt-1">{errors.especifiqueCondicion}</p>}
+                      <Label>Especifique la condición <span className="text-red-500">*</span></Label>
+                      <Input value={formData.especifiqueCondicion} onChange={(e) => handleChange('especifiqueCondicion', e.target.value)} placeholder="Describa la condición especial" className={errors.especifiqueCondicion ? 'border-red-500' : ''} />
+                      {errors.especifiqueCondicion && <p className="text-red-500 text-sm mt-1">{errors.especifiqueCondicion}</p>}
                     </div>
                   )}
                 </div>
 
                 <div className="mb-6">
-                  <Label htmlFor="necesidadesEspecialesAprendizaje" className="text-sm font-bold text-[#362511] block mb-3">¿El alumno tiene necesidades especiales de aprendizaje? <span className="text-red-500">*</span></Label>
+                  <Label className="text-sm font-bold text-[#362511] block mb-3">¿El alumno tiene necesidades especiales de aprendizaje? <span className="text-red-500">*</span></Label>
                   <Select value={formData.necesidadesEspecialesAprendizaje} onValueChange={(value) => handleChange('necesidadesEspecialesAprendizaje', value)}>
-                    <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.necesidadesEspecialesAprendizaje ? 'border-red-500' : ''}`}>
+                    <SelectTrigger className={errors.necesidadesEspecialesAprendizaje ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Seleccione una opción" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-[#E8D5C4]">
+                    <SelectContent>
                       <SelectItem value="si">Sí</SelectItem>
                       <SelectItem value="no">No</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.necesidadesEspecialesAprendizaje && <p className="text-red-500 text-sm font-medium mt-1">{errors.necesidadesEspecialesAprendizaje}</p>}
+                  {errors.necesidadesEspecialesAprendizaje && <p className="text-red-500 text-sm mt-1">{errors.necesidadesEspecialesAprendizaje}</p>}
 
                   {formData.necesidadesEspecialesAprendizaje === 'si' && (
                     <div className="mt-3">
-                      <Label htmlFor="especifiqueNecesidades" className="text-sm font-bold text-[#362511]">Especifique las necesidades especiales <span className="text-red-500">*</span></Label>
-                      <Input id="especifiqueNecesidades" value={formData.especifiqueNecesidades} onChange={(e) => handleChange('especifiqueNecesidades', e.target.value)} placeholder="Describa las necesidades especiales de aprendizaje" className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.especifiqueNecesidades ? 'border-red-500' : ''}`} />
-                      {errors.especifiqueNecesidades && <p className="text-red-500 text-sm font-medium mt-1">{errors.especifiqueNecesidades}</p>}
+                      <Label>Especifique las necesidades especiales <span className="text-red-500">*</span></Label>
+                      <Input value={formData.especifiqueNecesidades} onChange={(e) => handleChange('especifiqueNecesidades', e.target.value)} placeholder="Describa las necesidades especiales de aprendizaje" className={errors.especifiqueNecesidades ? 'border-red-500' : ''} />
+                      {errors.especifiqueNecesidades && <p className="text-red-500 text-sm mt-1">{errors.especifiqueNecesidades}</p>}
                     </div>
                   )}
                 </div>
 
                 <div className="mb-6">
-                  <Label htmlFor="esAlergico" className="text-sm font-bold text-[#362511] block mb-3">¿El alumno es alérgico a algún medicamento? <span className="text-red-500">*</span></Label>
+                  <Label className="text-sm font-bold text-[#362511] block mb-3">¿El alumno es alérgico a algún medicamento? <span className="text-red-500">*</span></Label>
                   <Select value={formData.esAlergico} onValueChange={(value) => handleChange('esAlergico', value)}>
-                    <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.esAlergico ? 'border-red-500' : ''}`}>
+                    <SelectTrigger className={errors.esAlergico ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Seleccione una opción" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-[#E8D5C4]">
+                    <SelectContent>
                       <SelectItem value="si">Sí</SelectItem>
                       <SelectItem value="no">No</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.esAlergico && <p className="text-red-500 text-sm font-medium mt-1">{errors.esAlergico}</p>}
+                  {errors.esAlergico && <p className="text-red-500 text-sm mt-1">{errors.esAlergico}</p>}
 
                   {formData.esAlergico === 'si' && (
                     <div className="mt-3">
-                      <Label htmlFor="especifiqueAlergia" className="text-sm font-bold text-[#362511]">Especifique a qué medicamentos es alérgico <span className="text-red-500">*</span></Label>
-                      <Input id="especifiqueAlergia" value={formData.especifiqueAlergia} onChange={(e) => handleChange('especifiqueAlergia', e.target.value)} placeholder="Liste los medicamentos a los que es alérgico" className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.especifiqueAlergia ? 'border-red-500' : ''}`} />
-                      {errors.especifiqueAlergia && <p className="text-red-500 text-sm font-medium mt-1">{errors.especifiqueAlergia}</p>}
+                      <Label>Especifique a qué medicamentos es alérgico <span className="text-red-500">*</span></Label>
+                      <Input value={formData.especifiqueAlergia} onChange={(e) => handleChange('especifiqueAlergia', e.target.value)} placeholder="Liste los medicamentos" className={errors.especifiqueAlergia ? 'border-red-500' : ''} />
+                      {errors.especifiqueAlergia && <p className="text-red-500 text-sm mt-1">{errors.especifiqueAlergia}</p>}
                     </div>
                   )}
                 </div>
 
                 <div className="mb-6">
-                  <Label htmlFor="estaVacunado" className="text-sm font-bold text-[#362511] block mb-3">¿El alumno está vacunado contra el COVID-19? <span className="text-red-500">*</span></Label>
+                  <Label className="text-sm font-bold text-[#362511] block mb-3">¿El alumno está vacunado contra el COVID-19? <span className="text-red-500">*</span></Label>
                   <Select value={formData.estaVacunado} onValueChange={(value) => handleChange('estaVacunado', value)}>
-                    <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.estaVacunado ? 'border-red-500' : ''}`}>
+                    <SelectTrigger className={errors.estaVacunado ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Seleccione una opción" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-[#E8D5C4]">
+                    <SelectContent>
                       <SelectItem value="si">Sí</SelectItem>
                       <SelectItem value="no">No</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.estaVacunado && <p className="text-red-500 text-sm font-medium mt-1">{errors.estaVacunado}</p>}
+                  {errors.estaVacunado && <p className="text-red-500 text-sm mt-1">{errors.estaVacunado}</p>}
 
                   {formData.estaVacunado === 'si' && (
                     <div className="mt-3">
-                      <Label htmlFor="numeroDosisVacuna" className="text-sm font-bold text-[#362511]">Número de dosis <span className="text-red-500">*</span></Label>
+                      <Label>Número de dosis <span className="text-red-500">*</span></Label>
                       <Select value={formData.numeroDosisVacuna} onValueChange={(value) => handleChange('numeroDosisVacuna', value)}>
-                        <SelectTrigger className={`border-[#E8D5C4] focus:border-[#9A784F] ${errors.numeroDosisVacuna ? 'border-red-500' : ''}`}>
+                        <SelectTrigger className={errors.numeroDosisVacuna ? 'border-red-500' : ''}>
                           <SelectValue placeholder="Seleccione el número de dosis" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white border-[#E8D5C4]">
+                        <SelectContent>
                           <SelectItem value="1">1 dosis</SelectItem>
                           <SelectItem value="2">2 dosis</SelectItem>
                           <SelectItem value="3">3 dosis</SelectItem>
@@ -1409,29 +1317,27 @@ function RegistroContent() {
                           <SelectItem value="mas">Más de 4 dosis</SelectItem>
                         </SelectContent>
                       </Select>
-                      {errors.numeroDosisVacuna && <p className="text-red-500 text-sm font-medium mt-1">{errors.numeroDosisVacuna}</p>}
+                      {errors.numeroDosisVacuna && <p className="text-red-500 text-sm mt-1">{errors.numeroDosisVacuna}</p>}
                     </div>
                   )}
                 </div>
               </div>
 
               <div className="flex gap-4 pt-6">
-                <Button type="submit" className="flex items-center gap-2 bg-[#9A784F] hover:bg-[#795C34] text-white flex-1 font-bold" size="lg" disabled={isSubmitting}>
-                  {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Procesando...</> : <><Save className="w-4 h-4" /> Continuar con Representantes</>}
+                <Button type="submit" className="flex-1 bg-[#9A784F] hover:bg-[#795C34] text-white font-bold" size="lg" disabled={isSubmitting}>
+                  {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Procesando...</> : <><Save className="w-4 h-4 mr-2" /> Continuar con Representantes</>}
                 </Button>
                 <Link href="/inicio" className="flex-1">
                   <Button type="button" variant="outline" className="w-full border-[#E8D5C4] text-[#362511] hover:bg-[#F8F4F0] font-bold" size="lg" disabled={isSubmitting}>Cancelar</Button>
                 </Link>
               </div>
 
-              <div className="bg-[#F8F4F0] border border-[#E8D5C4] rounded-lg p-4 mt-6">
+              <div className="bg-[#F8F4F0] border border-[#E8D5C4] rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <Users className="w-5 h-5 text-[#9A784F] mt-0.5" />
                   <div>
                     <h4 className="font-bold text-[#362511]">Próximo paso: Registro de Representantes</h4>
-                    <p className="text-[#65350F] text-sm mt-1 font-medium">
-                      Después de completar este formulario, continuará con el registro de los datos de los representantes (madre, padre o tutor legal).
-                    </p>
+                    <p className="text-[#65350F] text-sm mt-1">Después de completar este formulario, continuará con el registro de los datos de los representantes.</p>
                   </div>
                 </div>
               </div>
