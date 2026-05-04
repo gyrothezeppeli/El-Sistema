@@ -6,14 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { 
   Search, User, Phone, Mail, Calendar, MapPin, Music, Users, Eye, 
-  Filter, Download, X, SortAsc, SortDesc, Home, FileText, Table as TableIcon, Loader2
+  Filter, Download, X, SortAsc, SortDesc, Home, Table as TableIcon, Loader2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -95,18 +95,20 @@ const INSTRUMENTOS = [
   { id: 'contrabajo', nombre: 'Contrabajo', color: 'bg-[#FFF3E0]', textColor: 'text-[#FF9800]' }
 ];
 
-// Definir orquestas disponibles
-const ORQUESTAS = [
-  { id: 'orquesta-sinfonica', nombre: 'Orquesta Sinfónica', color: 'bg-[#E8EAF6]', textColor: 'text-[#3949AB]' },
-  { id: 'orquesta-cuerdas', nombre: 'Orquesta de Cuerdas', color: 'bg-[#E0F2F1]', textColor: 'text-[#00796B]' },
-  { id: 'orquesta-juvenil', nombre: 'Orquesta Juvenil', color: 'bg-[#FCE4EC]', textColor: 'text-[#C2185B]' },
-  { id: 'orquesta-infantil', nombre: 'Orquesta Infantil', color: 'bg-[#FFF3E0]', textColor: 'text-[#FF9800]' },
-  { id: 'orquesta-principal', nombre: 'Orquesta Principal', color: 'bg-[#E8F5E8]', textColor: 'text-[#4CAF50]' }
+// Colores para las orquestas (se asignarán dinámicamente)
+const ORQUESTA_COLORS = [
+  { bg: 'bg-[#E8EAF6]', text: 'text-[#3949AB]', border: 'border-[#3949AB]' },
+  { bg: 'bg-[#E0F2F1]', text: 'text-[#00796B]', border: 'border-[#00796B]' },
+  { bg: 'bg-[#FCE4EC]', text: 'text-[#C2185B]', border: 'border-[#C2185B]' },
+  { bg: 'bg-[#FFF3E0]', text: 'text-[#FF9800]', border: 'border-[#FF9800]' },
+  { bg: 'bg-[#E8F5E8]', text: 'text-[#4CAF50]', border: 'border-[#4CAF50]' },
+  { bg: 'bg-[#FFE0E0]', text: 'text-[#D32F2F]', border: 'border-[#D32F2F]' },
+  { bg: 'bg-[#E0E0FF]', text: 'text-[#5E35B1]', border: 'border-[#5E35B1]' },
+  { bg: 'bg-[#FFF9C4]', text: 'text-[#F57F17]', border: 'border-[#F57F17]' },
 ];
 
 const exportToExcel = (estudiantes: Estudiante[]) => {
   const dataToExport = estudiantes.map(estudiante => ({
-    // ========== DATOS DEL ESTUDIANTE ==========
     'Cédula del Estudiante': estudiante.cedulaIdentidad,
     'Nombres del Estudiante': estudiante.nombres,
     'Apellidos del Estudiante': estudiante.apellidos,
@@ -120,25 +122,17 @@ const exportToExcel = (estudiantes: Estudiante[]) => {
     'Teléfono Celular': estudiante.numeroTelefonoCelular || 'No especificado',
     'Teléfono Local': estudiante.numeroTelefonoLocal || 'No especificado',
     'Correo Electrónico': estudiante.correoElectronico || 'No especificado',
-    
-    // ========== DATOS MUSICALES ==========
     'Instrumento Principal': estudiante.instrumentoPrincipal || 'No especificado',
     'Instrumentos Secundarios': estudiante.instrumentosSecundarios || 'No especificados',
     'Agrupación Actual': estudiante.agrupacionPertenece || 'No especificada',
     'Agrupaciones Anteriores': estudiante.nombreAgrupacionesPertenecio || 'No especificadas',
     'Año de Inicio': estudiante.añoInicio || 'No especificado',
-    
-    // ========== DATOS ACADÉMICOS ==========
     'Condición del Alumno': estudiante.condicionAlumno || 'No especificada',
-    
-    // ========== DATOS DE SALUD ==========
     'Enfermedades que Padece': estudiante.enfermedadesPadece || 'Ninguna',
     'Necesidades Especiales de Aprendizaje': estudiante.necesidadesEspecialesAprendizaje || 'Ninguna',
     'Es Alérgico': estudiante.esAlergico === 'si' ? 'Sí' : 'No',
     'Está Vacunado': estudiante.estaVacunado === 'si' ? 'Sí' : 'No',
     'Número de Dosis de Vacuna': estudiante.numeroDosisVacuna || 'No especificado',
-    
-    // ========== DATOS DE LA MADRE ==========
     'Nombre Completo de la Madre': estudiante.representante?.nombreApellidoMadre || 'No registrado',
     'Cédula de la Madre': estudiante.representante?.cedulaMadre || 'No registrado',
     'Madre Vive con el Alumno': estudiante.representante?.madreViveConAlumno === 'si' ? 'Sí' : 'No',
@@ -146,8 +140,6 @@ const exportToExcel = (estudiantes: Estudiante[]) => {
     'Dirección de la Madre': estudiante.representante?.direccionMadre || 'No especificada',
     'Teléfono de la Madre': estudiante.representante?.telefonoMadre || 'No especificado',
     'Correo de la Madre': estudiante.representante?.correoMadre || 'No especificado',
-    
-    // ========== DATOS DEL PADRE ==========
     'Nombre Completo del Padre': estudiante.representante?.nombreApellidoPadre || 'No registrado',
     'Cédula del Padre': estudiante.representante?.cedulaPadre || 'No registrado',
     'Padre Vive con el Alumno': estudiante.representante?.padreViveConAlumno === 'si' ? 'Sí' : 'No',
@@ -155,8 +147,6 @@ const exportToExcel = (estudiantes: Estudiante[]) => {
     'Dirección del Padre': estudiante.representante?.direccionPadre || 'No especificada',
     'Teléfono del Padre': estudiante.representante?.telefonoPadre || 'No especificado',
     'Correo del Padre': estudiante.representante?.correoPadre || 'No especificado',
-    
-    // ========== DATOS DEL REPRESENTANTE LEGAL ==========
     'Nombre del Representante Legal': estudiante.representante?.nombreApellidoRepresentanteLegal || 'No registrado',
     'Cédula del Representante Legal': estudiante.representante?.cedulaRepresentanteLegal || 'No registrado',
     'Representante Legal Vive con el Alumno': estudiante.representante?.representanteLegalViveConAlumno === 'si' ? 'Sí' : 'No',
@@ -165,37 +155,15 @@ const exportToExcel = (estudiantes: Estudiante[]) => {
     'Teléfono del Representante Legal': estudiante.representante?.telefonoRepresentanteLegal || 'No especificado',
     'Correo del Representante Legal': estudiante.representante?.correoRepresentanteLegal || 'No especificado',
     'Parentesco del Representante Legal': estudiante.representante?.parentescoRepresentanteLegal || 'No especificado',
-    
-    // ========== DATOS DEL SISTEMA ==========
     'Fecha de Registro en el Sistema': new Date(estudiante.createdAt).toLocaleDateString('es-ES'),
     'Última Actualización': new Date(estudiante.updatedAt).toLocaleDateString('es-ES'),
     'ID del Estudiante': estudiante.id,
     'ID del Representante': estudiante.representanteId || 'No asignado'
   }));
 
-  // Crear worksheet con todos los datos
   const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-  
-  // Ajustar ancho de columnas para mejor visualización
-  const colWidths = [
-    { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 8 }, { wch: 12 },
-    { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 30 },
-    { wch: 15 }, { wch: 15 }, { wch: 25 }, { wch: 20 }, { wch: 30 },
-    { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 25 }, { wch: 25 },
-    { wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 25 },
-    { wch: 20 }, { wch: 12 }, { wch: 20 }, { wch: 25 }, { wch: 15 },
-    { wch: 25 }, { wch: 20 }, { wch: 12 }, { wch: 20 }, { wch: 25 },
-    { wch: 15 }, { wch: 25 }, { wch: 20 }, { wch: 12 }, { wch: 20 },
-    { wch: 25 }, { wch: 15 }, { wch: 25 }, { wch: 20 }, { wch: 15 },
-    { wch: 20 }, { wch: 20 }, { wch: 30 }
-  ];
-  worksheet['!cols'] = colWidths;
-
-  // Crear workbook y guardar archivo
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Datos Completos');
-  
-  // Generar nombre de archivo con fecha
   const fecha = new Date().toISOString().split('T')[0];
   XLSX.writeFile(workbook, `reporte_completo_estudiantes_${fecha}.xlsx`);
 };
@@ -388,12 +356,16 @@ function InstrumentoCard({ instrumento, isSelected, estudiantesCount, onClick }:
   );
 }
 
-function OrquestaCard({ orquesta, isSelected, estudiantesCount, onClick }: { 
-  orquesta: typeof ORQUESTAS[0]; 
-  isSelected: boolean; 
-  estudiantesCount: number; 
-  onClick: () => void; 
+// Componente dinámico para orquestas
+function OrquestaCard({ orquesta, colorIndex, isSelected, estudiantesCount, onClick }: { 
+  orquesta: string;
+  colorIndex: number;
+  isSelected: boolean;
+  estudiantesCount: number;
+  onClick: () => void;
 }) {
+  const color = ORQUESTA_COLORS[colorIndex % ORQUESTA_COLORS.length];
+  
   return (
     <Card 
       className={`cursor-pointer transition-all duration-300 border-2 hover:shadow-lg ${
@@ -406,10 +378,13 @@ function OrquestaCard({ orquesta, isSelected, estudiantesCount, onClick }: {
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className={`font-semibold ${isSelected ? 'text-[#362511]' : 'text-[#795C34]'}`}>
-              {orquesta.nombre}
-            </h3>
-            <p className="text-sm text-[#65350F]">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${color.bg}`}></div>
+              <h3 className={`font-semibold ${isSelected ? 'text-[#362511]' : 'text-[#795C34]'}`}>
+                {orquesta}
+              </h3>
+            </div>
+            <p className="text-sm text-[#65350F] ml-4">
               {estudiantesCount} estudiante{estudiantesCount !== 1 ? 's' : ''}
             </p>
           </div>
@@ -483,10 +458,6 @@ function EstudiantesPage() {
     tieneRepresentante: ''
   });
 
-  useEffect(() => {
-    fetchEstudiantes();
-  }, []);
-
   const fetchEstudiantes = async () => {
     try {
       const response = await fetch('/api/estudiantes', {
@@ -507,6 +478,11 @@ function EstudiantesPage() {
     }
   };
 
+  useEffect(() => {
+    fetchEstudiantes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleLoadMore = () => {
     setLoadingMore(true);
     setTimeout(() => {
@@ -514,6 +490,17 @@ function EstudiantesPage() {
       setLoadingMore(false);
     }, 500);
   };
+
+  // Obtener lista única de orquestas desde los estudiantes
+  const orquestasUnicas = useMemo(() => {
+    const orquestas = new Set<string>();
+    estudiantes.forEach(est => {
+      if (est.agrupacionPertenece && est.agrupacionPertenece.trim() !== '') {
+        orquestas.add(est.agrupacionPertenece);
+      }
+    });
+    return Array.from(orquestas).sort();
+  }, [estudiantes]);
 
   const estudiantesPorInstrumento = useMemo(() => {
     const counts: { [key: string]: number } = {};
@@ -527,13 +514,13 @@ function EstudiantesPage() {
 
   const estudiantesPorOrquesta = useMemo(() => {
     const counts: { [key: string]: number } = {};
-    ORQUESTAS.forEach(orquesta => {
-      counts[orquesta.id] = estudiantes.filter(estudiante => 
-        estudiante.agrupacionPertenece?.toLowerCase().includes(orquesta.nombre.toLowerCase())
+    orquestasUnicas.forEach(orquesta => {
+      counts[orquesta] = estudiantes.filter(estudiante => 
+        estudiante.agrupacionPertenece === orquesta
       ).length;
     });
     return counts;
-  }, [estudiantes]);
+  }, [estudiantes, orquestasUnicas]);
 
   const filteredAndSortedEstudiantes = useMemo(() => {
     let filtered = estudiantes.filter(estudiante =>
@@ -552,14 +539,11 @@ function EstudiantesPage() {
       }
     }
 
-    // Filtrar por orquesta
+    // Filtrar por orquesta (comparación exacta)
     if (selectedOrquesta) {
-      const orquesta = ORQUESTAS.find(o => o.id === selectedOrquesta);
-      if (orquesta) {
-        filtered = filtered.filter(estudiante => 
-          estudiante.agrupacionPertenece?.toLowerCase().includes(orquesta.nombre.toLowerCase())
-        );
-      }
+      filtered = filtered.filter(estudiante => 
+        estudiante.agrupacionPertenece === selectedOrquesta
+      );
     }
 
     // Resto de filtros
@@ -675,50 +659,56 @@ function EstudiantesPage() {
             </div>
 
             {/* Filtro de Instrumentos */}
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-[#795C34] mb-3 flex items-center gap-2">
-                <Music className="w-4 h-4" />
-                Filtrar por Instrumento Principal
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {INSTRUMENTOS.map((instrumento) => (
-                  <InstrumentoCard
-                    key={instrumento.id}
-                    instrumento={instrumento}
-                    isSelected={selectedInstrumento === instrumento.id}
-                    estudiantesCount={estudiantesPorInstrumento[instrumento.id] || 0}
-                    onClick={() => {
-                      setSelectedInstrumento(prev => prev === instrumento.id ? '' : instrumento.id);
-                      setDisplayCount(20);
-                    }}
-                  />
-                ))}
+            {INSTRUMENTOS.some(inst => estudiantesPorInstrumento[inst.id] > 0) && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-[#795C34] mb-3 flex items-center gap-2">
+                  <Music className="w-4 h-4" />
+                  Filtrar por Instrumento Principal
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {INSTRUMENTOS.map((instrumento) => (
+                    <InstrumentoCard
+                      key={instrumento.id}
+                      instrumento={instrumento}
+                      isSelected={selectedInstrumento === instrumento.id}
+                      estudiantesCount={estudiantesPorInstrumento[instrumento.id] || 0}
+                      onClick={() => {
+                        setSelectedInstrumento(prev => prev === instrumento.id ? '' : instrumento.id);
+                        setDisplayCount(20);
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            <Separator className="my-6" />
-
-            {/* Filtro de Orquestas */}
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-[#795C34] mb-3 flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Filtrar por Orquesta/Agrupación
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {ORQUESTAS.map((orquesta) => (
-                  <OrquestaCard
-                    key={orquesta.id}
-                    orquesta={orquesta}
-                    isSelected={selectedOrquesta === orquesta.id}
-                    estudiantesCount={estudiantesPorOrquesta[orquesta.id] || 0}
-                    onClick={() => {
-                      setSelectedOrquesta(prev => prev === orquesta.id ? '' : orquesta.id);
-                      setDisplayCount(20);
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
+            {/* Filtro de Orquestas - DINÁMICO desde la base de datos */}
+            {orquestasUnicas.length > 0 && (
+              <>
+                <Separator className="my-6" />
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-[#795C34] mb-3 flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    Filtrar por Orquesta/Agrupación
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {orquestasUnicas.map((orquesta, index) => (
+                      <OrquestaCard
+                        key={orquesta}
+                        orquesta={orquesta}
+                        colorIndex={index}
+                        isSelected={selectedOrquesta === orquesta}
+                        estudiantesCount={estudiantesPorOrquesta[orquesta] || 0}
+                        onClick={() => {
+                          setSelectedOrquesta(prev => prev === orquesta ? '' : orquesta);
+                          setDisplayCount(20);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
 
             <Separator className="my-6" />
 
@@ -787,7 +777,7 @@ function EstudiantesPage() {
                 <span className="text-sm text-[#795C34] font-medium">Filtros activos:</span>
                 {searchTerm && (
                   <Badge variant="outline" className="bg-white text-[#795C34]">
-                    Búsqueda: "{searchTerm}"
+                    Búsqueda: &quot;{searchTerm}&quot;
                   </Badge>
                 )}
                 {selectedInstrumento && (
@@ -797,7 +787,7 @@ function EstudiantesPage() {
                 )}
                 {selectedOrquesta && (
                   <Badge variant="outline" className="bg-white text-[#795C34]">
-                    Orquesta: {ORQUESTAS.find(o => o.id === selectedOrquesta)?.nombre}
+                    Orquesta: {selectedOrquesta}
                   </Badge>
                 )}
                 {filters.sexo && (
@@ -871,9 +861,11 @@ function EstudiantesPage() {
                       </TableCell>
                       <TableCell>{estudiante.instrumentoPrincipal || '-'}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="bg-[#F5F1EB] text-[#795C34]">
-                          {estudiante.agrupacionPertenece || '-'}
-                        </Badge>
+                        {estudiante.agrupacionPertenece ? (
+                          <Badge variant="outline" className="bg-[#F5F1EB] text-[#795C34]">
+                            {estudiante.agrupacionPertenece}
+                          </Badge>
+                        ) : '-'}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col text-sm">
