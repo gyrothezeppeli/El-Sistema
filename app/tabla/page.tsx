@@ -95,6 +95,15 @@ const INSTRUMENTOS = [
   { id: 'contrabajo', nombre: 'Contrabajo', color: 'bg-[#FFF3E0]', textColor: 'text-[#FF9800]' }
 ];
 
+// Definir orquestas disponibles
+const ORQUESTAS = [
+  { id: 'orquesta-sinfonica', nombre: 'Orquesta Sinfónica', color: 'bg-[#E8EAF6]', textColor: 'text-[#3949AB]' },
+  { id: 'orquesta-cuerdas', nombre: 'Orquesta de Cuerdas', color: 'bg-[#E0F2F1]', textColor: 'text-[#00796B]' },
+  { id: 'orquesta-juvenil', nombre: 'Orquesta Juvenil', color: 'bg-[#FCE4EC]', textColor: 'text-[#C2185B]' },
+  { id: 'orquesta-infantil', nombre: 'Orquesta Infantil', color: 'bg-[#FFF3E0]', textColor: 'text-[#FF9800]' },
+  { id: 'orquesta-principal', nombre: 'Orquesta Principal', color: 'bg-[#E8F5E8]', textColor: 'text-[#4CAF50]' }
+];
+
 const exportToExcel = (estudiantes: Estudiante[]) => {
   const dataToExport = estudiantes.map(estudiante => ({
     // ========== DATOS DEL ESTUDIANTE ==========
@@ -379,6 +388,40 @@ function InstrumentoCard({ instrumento, isSelected, estudiantesCount, onClick }:
   );
 }
 
+function OrquestaCard({ orquesta, isSelected, estudiantesCount, onClick }: { 
+  orquesta: typeof ORQUESTAS[0]; 
+  isSelected: boolean; 
+  estudiantesCount: number; 
+  onClick: () => void; 
+}) {
+  return (
+    <Card 
+      className={`cursor-pointer transition-all duration-300 border-2 hover:shadow-lg ${
+        isSelected 
+          ? 'border-[#9A784F] bg-gradient-to-br from-[#F5F1EB] to-[#E8D5C4] scale-105' 
+          : 'border-[#E8D5C4] bg-white hover:border-[#D4B8A4]'
+      }`}
+      onClick={onClick}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className={`font-semibold ${isSelected ? 'text-[#362511]' : 'text-[#795C34]'}`}>
+              {orquesta.nombre}
+            </h3>
+            <p className="text-sm text-[#65350F]">
+              {estudiantesCount} estudiante{estudiantesCount !== 1 ? 's' : ''}
+            </p>
+          </div>
+          {isSelected && (
+            <Badge className="bg-[#9A784F] text-white">Seleccionado</Badge>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function SortableHeader({ field, currentSort, sortOrder, onSort, children }: { 
   field: SortField;
   currentSort: SortField;
@@ -433,6 +476,7 @@ function EstudiantesPage() {
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [selectedInstrumento, setSelectedInstrumento] = useState<string>('');
+  const [selectedOrquesta, setSelectedOrquesta] = useState<string>('');
   const [filters, setFilters] = useState({
     sexo: '',
     agrupacion: '',
@@ -481,6 +525,16 @@ function EstudiantesPage() {
     return counts;
   }, [estudiantes]);
 
+  const estudiantesPorOrquesta = useMemo(() => {
+    const counts: { [key: string]: number } = {};
+    ORQUESTAS.forEach(orquesta => {
+      counts[orquesta.id] = estudiantes.filter(estudiante => 
+        estudiante.agrupacionPertenece?.toLowerCase().includes(orquesta.nombre.toLowerCase())
+      ).length;
+    });
+    return counts;
+  }, [estudiantes]);
+
   const filteredAndSortedEstudiantes = useMemo(() => {
     let filtered = estudiantes.filter(estudiante =>
       estudiante.nombres.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -488,6 +542,7 @@ function EstudiantesPage() {
       estudiante.cedulaIdentidad.includes(searchTerm)
     );
 
+    // Filtrar por instrumento
     if (selectedInstrumento) {
       const instrumento = INSTRUMENTOS.find(i => i.id === selectedInstrumento);
       if (instrumento) {
@@ -497,10 +552,22 @@ function EstudiantesPage() {
       }
     }
 
+    // Filtrar por orquesta
+    if (selectedOrquesta) {
+      const orquesta = ORQUESTAS.find(o => o.id === selectedOrquesta);
+      if (orquesta) {
+        filtered = filtered.filter(estudiante => 
+          estudiante.agrupacionPertenece?.toLowerCase().includes(orquesta.nombre.toLowerCase())
+        );
+      }
+    }
+
+    // Resto de filtros
     if (filters.sexo) filtered = filtered.filter(e => e.sexo === filters.sexo);
     if (filters.agrupacion) filtered = filtered.filter(e => e.agrupacionPertenece.toLowerCase().includes(filters.agrupacion.toLowerCase()));
     if (filters.tieneRepresentante) filtered = filtered.filter(e => filters.tieneRepresentante === 'si' ? e.representanteId : !e.representanteId);
 
+    // Ordenamiento
     filtered.sort((a, b) => {
       let aVal, bVal;
       switch (sortField) {
@@ -519,7 +586,7 @@ function EstudiantesPage() {
     });
 
     return filtered;
-  }, [estudiantes, searchTerm, filters, sortField, sortOrder, selectedInstrumento]);
+  }, [estudiantes, searchTerm, filters, sortField, sortOrder, selectedInstrumento, selectedOrquesta]);
 
   const displayedEstudiantes = filteredAndSortedEstudiantes.slice(0, displayCount);
   const hasMoreStudents = displayCount < filteredAndSortedEstudiantes.length;
@@ -540,10 +607,11 @@ function EstudiantesPage() {
     setFilters({ sexo: '', agrupacion: '', tieneRepresentante: '' });
     setSearchTerm('');
     setSelectedInstrumento('');
+    setSelectedOrquesta('');
     setDisplayCount(20);
   };
 
-  const hasActiveFilters = searchTerm || filters.sexo || filters.agrupacion || filters.tieneRepresentante || selectedInstrumento;
+  const hasActiveFilters = searchTerm || filters.sexo || filters.agrupacion || filters.tieneRepresentante || selectedInstrumento || selectedOrquesta;
 
   if (loading) {
     return (
@@ -606,21 +674,55 @@ function EstudiantesPage() {
               </DropdownMenu>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              {INSTRUMENTOS.map((instrumento) => (
-                <InstrumentoCard
-                  key={instrumento.id}
-                  instrumento={instrumento}
-                  isSelected={selectedInstrumento === instrumento.id}
-                  estudiantesCount={estudiantesPorInstrumento[instrumento.id] || 0}
-                  onClick={() => {
-                    setSelectedInstrumento(prev => prev === instrumento.id ? '' : instrumento.id);
-                    setDisplayCount(20);
-                  }}
-                />
-              ))}
+            {/* Filtro de Instrumentos */}
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-[#795C34] mb-3 flex items-center gap-2">
+                <Music className="w-4 h-4" />
+                Filtrar por Instrumento Principal
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {INSTRUMENTOS.map((instrumento) => (
+                  <InstrumentoCard
+                    key={instrumento.id}
+                    instrumento={instrumento}
+                    isSelected={selectedInstrumento === instrumento.id}
+                    estudiantesCount={estudiantesPorInstrumento[instrumento.id] || 0}
+                    onClick={() => {
+                      setSelectedInstrumento(prev => prev === instrumento.id ? '' : instrumento.id);
+                      setDisplayCount(20);
+                    }}
+                  />
+                ))}
+              </div>
             </div>
 
+            <Separator className="my-6" />
+
+            {/* Filtro de Orquestas */}
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-[#795C34] mb-3 flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Filtrar por Orquesta/Agrupación
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {ORQUESTAS.map((orquesta) => (
+                  <OrquestaCard
+                    key={orquesta.id}
+                    orquesta={orquesta}
+                    isSelected={selectedOrquesta === orquesta.id}
+                    estudiantesCount={estudiantesPorOrquesta[orquesta.id] || 0}
+                    onClick={() => {
+                      setSelectedOrquesta(prev => prev === orquesta.id ? '' : orquesta.id);
+                      setDisplayCount(20);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <Separator className="my-6" />
+
+            {/* Búsqueda y filtros adicionales */}
             <div className="flex flex-col lg:flex-row gap-4 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9A784F] w-4 h-4" />
@@ -639,7 +741,7 @@ function EstudiantesPage() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="border-[#E8D5C4] text-[#795C34]">
                     <Filter className="w-4 h-4 mr-2" />
-                    Filtros {hasActiveFilters && '(Activos)'}
+                    Más Filtros {hasActiveFilters && '(Activos)'}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
@@ -674,22 +776,28 @@ function EstudiantesPage() {
                     </select>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={clearFilters}>Limpiar filtros</DropdownMenuItem>
+                  <DropdownMenuItem onClick={clearFilters}>Limpiar todos los filtros</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
 
+            {/* Filtros activos */}
             {hasActiveFilters && (
               <div className="flex flex-wrap gap-2 mb-4 p-3 bg-[#FFE8D6] border border-[#FFB38A] rounded-lg">
                 <span className="text-sm text-[#795C34] font-medium">Filtros activos:</span>
                 {searchTerm && (
                   <Badge variant="outline" className="bg-white text-[#795C34]">
-                    Búsqueda: &quot;{searchTerm}&quot;
+                    Búsqueda: "{searchTerm}"
                   </Badge>
                 )}
                 {selectedInstrumento && (
                   <Badge variant="outline" className="bg-white text-[#795C34]">
                     Instrumento: {INSTRUMENTOS.find(i => i.id === selectedInstrumento)?.nombre}
+                  </Badge>
+                )}
+                {selectedOrquesta && (
+                  <Badge variant="outline" className="bg-white text-[#795C34]">
+                    Orquesta: {ORQUESTAS.find(o => o.id === selectedOrquesta)?.nombre}
                   </Badge>
                 )}
                 {filters.sexo && (
@@ -704,11 +812,20 @@ function EstudiantesPage() {
                 )}
                 <Button variant="ghost" size="sm" onClick={clearFilters} className="text-[#795C34] ml-auto">
                   <X className="w-3 h-3 mr-1" />
-                  Limpiar
+                  Limpiar todo
                 </Button>
               </div>
             )}
 
+            {/* Resultados */}
+            <div className="mb-4">
+              <p className="text-sm text-[#795C34]">
+                Mostrando {displayedEstudiantes.length} de {filteredAndSortedEstudiantes.length} estudiantes
+                {filteredAndSortedEstudiantes.length !== estudiantes.length && ` (filtrados de ${estudiantes.length} totales)`}
+              </p>
+            </div>
+
+            {/* Tabla de estudiantes */}
             <div className="rounded-lg border border-[#E8D5C4] bg-white overflow-hidden">
               <Table>
                 <TableHeader>
@@ -728,6 +845,9 @@ function EstudiantesPage() {
                     <TableHead>Sexo</TableHead>
                     <SortableHeader field="instrumentoPrincipal" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>
                       Instrumento
+                    </SortableHeader>
+                    <SortableHeader field="agrupacionPertenece" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>
+                      Orquesta
                     </SortableHeader>
                     <TableHead>Contacto</TableHead>
                     <TableHead>Representante</TableHead>
@@ -750,6 +870,11 @@ function EstudiantesPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>{estudiante.instrumentoPrincipal || '-'}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-[#F5F1EB] text-[#795C34]">
+                          {estudiante.agrupacionPertenece || '-'}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <div className="flex flex-col text-sm">
                           <span>{estudiante.numeroTelefonoCelular}</span>
@@ -774,6 +899,7 @@ function EstudiantesPage() {
               </Table>
             </div>
 
+            {/* Botón de cargar más */}
             {hasMoreStudents && (
               <div className="flex justify-center mt-6">
                 <Button onClick={handleLoadMore} disabled={loadingMore} className="bg-[#9A784F] hover:bg-[#795C34] text-white">
@@ -785,6 +911,7 @@ function EstudiantesPage() {
           </CardContent>
         </Card>
 
+        {/* Modal de detalles */}
         {showDetails && selectedEstudiante && (
           <EstudianteDetailsModal estudiante={selectedEstudiante} onClose={() => setShowDetails(false)} />
         )}
