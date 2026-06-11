@@ -106,7 +106,7 @@ export default function InstrumentosPage() {
               <div className="flex items-center space-x-4">
                 <div className="relative w-14 h-14">
                   <Image
-                    src="/images/logo.png"
+                    src="/images/logo.p"
                     alt="Logo EL SISTEMA"
                     fill
                     className="object-contain"
