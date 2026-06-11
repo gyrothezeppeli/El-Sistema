@@ -21,35 +21,35 @@ export default function InstrumentosPage() {
     {
       nombre: 'Contrabajo',
       imagen: '/images/contrabajo.png',
-      imagenFinal: '/images/viola_final.png',
+      imagenFinal: '/images/contrabajo.png',
       descripcion: 'El contrabajo es el instrumento más grande y de sonido más grave de la familia de los instrumentos de cuerda frotada. Se utiliza en orquestas sinfónicas, jazz y otros géneros musicales.',
       rutaPartituras: '/partituras/contrabajo'
     },
     {
       nombre: 'Viola',
       imagen: '/images/viola.jpg',
-      imagenFinal: '/images/viola_final.png',
+      imagenFinal: '/images/viola.jpg',
       descripcion: 'La viola es un instrumento de cuerda frotada, similar en construcción al violín pero de mayor tamaño y con un sonido más grave y cálido.',
       rutaPartituras: '/partituras/viola'
     },
     {
       nombre: 'Violín 1',
       imagen: '/images/violin_1.jpg',
-      imagenFinal: '/images/violin_final.png',
+      imagenFinal: '/images/violin_1.jpg',
       descripcion: 'El violín es el instrumento más agudo de la familia de los instrumentos de cuerda frotada. El violín 1 generalmente lleva la melodía principal.',
       rutaPartituras: '/partituras/violin1'
     },
     {
       nombre: 'Violonchelo',
       imagen: '/images/violonchelo.jpg',
-      imagenFinal: '/images/Violonchelo_final.png',
+      imagenFinal: '/images/Violonchelo.jpg',
       descripcion: 'El violonchelo o cello es un instrumento de cuerda frotada de tesitura media-grave. Se toca apoyado entre las piernas del músico.',
       rutaPartituras: '/partituras/violonchelo'
     },
     {
       nombre: 'Violín 2',
       imagen: '/images/violin_2.jpg',
-      imagenFinal: '/images/violin_final.png',
+      imagenFinal: '/images/violin_2.jpg',
       descripcion: 'El segundo violín complementa al primer violín en la orquesta, generalmente tocando armonías y contramelodías.',
       rutaPartituras: '/partituras/violin2'
     }
