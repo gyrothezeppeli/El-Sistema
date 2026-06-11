@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ArrowLeft, Music } from 'lucide-react';
+import { ArrowLeft, Music, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function InstrumentosPage() {
@@ -21,35 +21,35 @@ export default function InstrumentosPage() {
     {
       nombre: 'Contrabajo',
       imagen: '/images/contrabajo.png',
-      imagenFinal: '/images/viola_final.png',
+      imagenFinal: '/images/contrabajo.png',
       descripcion: 'El contrabajo es el instrumento más grande y de sonido más grave de la familia de los instrumentos de cuerda frotada. Se utiliza en orquestas sinfónicas, jazz y otros géneros musicales.',
       rutaPartituras: '/partituras/contrabajo'
     },
     {
       nombre: 'Viola',
       imagen: '/images/viola.jpg',
-      imagenFinal: '/images/viola_final.png',
+      imagenFinal: '/images/viola.jpg',
       descripcion: 'La viola es un instrumento de cuerda frotada, similar en construcción al violín pero de mayor tamaño y con un sonido más grave y cálido.',
       rutaPartituras: '/partituras/viola'
     },
     {
       nombre: 'Violín 1',
       imagen: '/images/violin_1.jpg',
-      imagenFinal: '/images/violin_final.png',
+      imagenFinal: '/images/violin_1.jpg',
       descripcion: 'El violín es el instrumento más agudo de la familia de los instrumentos de cuerda frotada. El violín 1 generalmente lleva la melodía principal.',
       rutaPartituras: '/partituras/violin1'
     },
     {
       nombre: 'Violonchelo',
       imagen: '/images/violonchelo.jpg',
-      imagenFinal: '/images/Violonchelo_final.png',
+      imagenFinal: '/images/Violonchelo.jpg',
       descripcion: 'El violonchelo o cello es un instrumento de cuerda frotada de tesitura media-grave. Se toca apoyado entre las piernas del músico.',
       rutaPartituras: '/partituras/violonchelo'
     },
     {
       nombre: 'Violín 2',
       imagen: '/images/violin_2.jpg',
-      imagenFinal: '/images/violin_final.png',
+      imagenFinal: '/images/violin_2.jpg',
       descripcion: 'El segundo violín complementa al primer violín en la orquesta, generalmente tocando armonías y contramelodías.',
       rutaPartituras: '/partituras/violin2'
     }
@@ -90,88 +90,60 @@ export default function InstrumentosPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8F4F0] via-[#E8D5C4] to-[#D4B8A4]">
-      {/* Navigation Header */}
-      <nav className="bg-[#362511] backdrop-blur-md border-b border-[#795C34] sticky top-0 z-50 shadow-lg">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-28">
-            <div className="flex items-center space-x-6">
+      {/* Navigation Header - Optimizado para móvil */}
+      <nav className="bg-[#362511] border-b border-[#795C34] sticky top-0 z-50 shadow-lg">
+        <div className="px-3">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-3">
               <Button 
                 variant="ghost" 
-                className="flex items-center gap-3 text-white hover:bg-[#795C34] text-lg h-14 px-6 font-semibold transition-colors duration-200"
+                size="sm"
+                className="flex items-center gap-1 text-white hover:bg-[#795C34] text-sm h-9 px-3 font-semibold"
                 onClick={() => router.push('/inicio')}
               >
-                <ArrowLeft className="w-6 h-6" />
-                Volver 
+                <ArrowLeft className="w-4 h-4" />
+                Volver
               </Button>
-              <div className="flex items-center space-x-4">
-                <div className="relative w-14 h-14">
+              <div className="flex items-center gap-2">
+                <div className="relative w-8 h-8">
                   <Image
-                    src="/images/logo.pn"
+                    src="/images/logo.p"
                     alt="Logo EL SISTEMA"
                     fill
                     className="object-contain"
                     onError={handleImageError}
                   />
                 </div>
-                <span className="text-2xl font-bold text-white drop-shadow-sm">Instrumentos</span>
+                <span className="text-base font-bold text-white">Instrumentos</span>
               </div>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#362511] mb-6 drop-shadow-sm">
+      {/* Main Content - Optimizado para móvil */}
+      <div className="px-3 py-6">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-[#362511] mb-2">
             Nuestros Instrumentos
           </h1>
-          <p className="text-xl text-[#65350F] max-w-3xl mx-auto font-medium">
+          <p className="text-sm text-[#65350F] max-w-3xl mx-auto font-medium px-4">
             Explora cada instrumento de nuestra orquesta
           </p>
         </div>
 
-        {/* Grid de instrumentos */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto mb-16">
-          {instrumentos.slice(0, 3).map((instrumento) => (
-            <div key={instrumento.nombre} className="text-center space-y-8">
-              <h3 className="text-2xl font-bold text-[#362511] mb-4 drop-shadow-sm">
+        {/* Grid de instrumentos - Una columna en móvil */}
+        <div className="grid grid-cols-1 gap-6 max-w-6xl mx-auto mb-8">
+          {instrumentos.map((instrumento) => (
+            <div key={instrumento.nombre} className="text-center space-y-3">
+              <h3 className="text-lg font-bold text-[#362511]">
                 {instrumento.nombre}
               </h3>
               
-              <div className="relative group inline-block">
+              <div className="relative group">
                 <Button
                   variant="outline"
-                  className={`w-64 h-64 rounded-3xl bg-white/90 border-4 ${getBorderColor(instrumento.nombre)} transition-all duration-300 relative overflow-hidden shadow-2xl hover:shadow-4xl hover:scale-105`}
-                  onClick={() => setSelectedInstrument(instrumento.nombre)}
-                >
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Image
-                      src={instrumento.imagen}
-                      alt={instrumento.nombre}
-                      fill
-                      className="object-cover opacity-90 group-hover:opacity-70 transition-opacity duration-300"
-                      onError={handleImageError}
-                    />
-                  </div>
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Segunda fila con 2 instrumentos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
-          {instrumentos.slice(3, 5).map((instrumento) => (
-            <div key={instrumento.nombre} className="text-center space-y-8">
-              <h3 className="text-2xl font-bold text-[#362511] mb-4 drop-shadow-sm">
-                {instrumento.nombre}
-              </h3>
-              
-              <div className="relative group inline-block">
-                <Button
-                  variant="outline"
-                  className={`w-64 h-64 rounded-3xl bg-white/90 border-4 ${getBorderColor(instrumento.nombre)} transition-all duration-300 relative overflow-hidden shadow-2xl hover:shadow-4xl hover:scale-105`}
+                  className={`w-full max-w-[280px] h-64 rounded-2xl bg-white/90 border-4 ${getBorderColor(instrumento.nombre)} transition-all duration-300 relative overflow-hidden shadow-xl hover:shadow-2xl hover:scale-105 mx-auto block`}
                   onClick={() => setSelectedInstrument(instrumento.nombre)}
                 >
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -190,25 +162,25 @@ export default function InstrumentosPage() {
         </div>
       </div>
 
-      {/* Dialog con botones de partituras para todos los instrumentos */}
+      {/* Dialog - Optimizado para móvil con mejor UX */}
       <Dialog open={!!selectedInstrument} onOpenChange={(open) => !open && setSelectedInstrument(null)}>
-        <DialogContent className="max-w-4xl w-[95vw] h-[90vh] max-h-[1000px] overflow-y-auto p-6 bg-white border-[#9A784F] shadow-2xl">
-          <DialogHeader className="mb-6">
-            <DialogTitle className="text-3xl font-bold text-center text-[#362511] mb-3">
+        <DialogContent className="max-w-[95%] w-[95%] h-auto max-h-[85vh] overflow-y-auto p-4 bg-white border-[#9A784F] shadow-2xl rounded-lg">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-xl font-bold text-center text-[#362511]">
               {instrumentoActual?.nombre}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-8">
+          <div className="space-y-4">
             {/* Imagen */}
             <div className="flex justify-center">
-              <div className="relative w-full max-w-2xl aspect-square rounded-2xl overflow-hidden border-4 border-[#E8D5C4] bg-[#F8F4F0] shadow-xl">
+              <div className="relative w-full max-w-[250px] aspect-square rounded-xl overflow-hidden border-4 border-[#E8D5C4] bg-[#F8F4F0] shadow-lg">
                 {instrumentoActual?.imagenFinal ? (
                   <Image
                     src={instrumentoActual.imagenFinal}
                     alt={`${instrumentoActual.nombre} - Vista detallada`}
                     fill
-                    className="object-contain p-6"
+                    className="object-contain p-4"
                     onError={handleImageError}
                   />
                 ) : (
@@ -217,7 +189,7 @@ export default function InstrumentosPage() {
                       src={fallbackSvg}
                       alt="Imagen no disponible"
                       fill
-                      className="object-contain p-8"
+                      className="object-contain p-6"
                     />
                   </div>
                 )}
@@ -225,22 +197,22 @@ export default function InstrumentosPage() {
             </div>
             
             {/* Descripción */}
-            <div className="bg-gradient-to-br from-[#F8F4F0] to-[#E8D5C4] p-8 rounded-2xl border border-[#D4B8A4] shadow-xl">
-              <h3 className="font-bold text-2xl text-[#362511] mb-6 text-center border-b-2 border-[#9A784F] pb-4">
+            <div className="bg-gradient-to-br from-[#F8F4F0] to-[#E8D5C4] p-4 rounded-xl border border-[#D4B8A4] shadow-md">
+              <h3 className="font-bold text-base text-[#362511] mb-3 text-center border-b-2 border-[#9A784F] pb-2">
                 Descripción
               </h3>
-              <p className="text-[#362511] leading-relaxed text-lg text-justify mb-6 font-medium">
+              <p className="text-[#362511] leading-relaxed text-sm text-justify font-medium">
                 {instrumentoActual?.descripcion}
               </p>
               
               {/* Botón de partituras integrado en la descripción */}
               {instrumentoActual && (
-                <div className="text-center mt-6 pt-6 border-t border-[#D4B8A4]">
+                <div className="text-center mt-4 pt-4 border-t border-[#D4B8A4]">
                   <Button
                     onClick={() => router.push(instrumentoActual.rutaPartituras)}
-                    className={`${getButtonColor(instrumentoActual.nombre)} px-8 py-3 text-lg flex items-center gap-3 mx-auto transition-all duration-300 hover:scale-105 font-bold shadow-lg`}
+                    className={`${getButtonColor(instrumentoActual.nombre)} px-6 py-2 text-sm flex items-center gap-2 mx-auto transition-all duration-300 hover:scale-105 font-bold shadow-md w-full max-w-[280px] justify-center`}
                   >
-                    <Music className="w-5 h-5" />
+                    <Music className="w-4 h-4" />
                     Ver Partituras de {instrumentoActual.nombre}
                   </Button>
                 </div>
@@ -249,15 +221,15 @@ export default function InstrumentosPage() {
           </div>
 
           {/* Botones de acción en el footer del dialog */}
-          <div className="flex justify-between items-center pt-6 border-t border-[#E8D5C4] mt-8">
+          <div className="flex justify-between items-center gap-3 pt-4 border-t border-[#E8D5C4] mt-4">
             {/* Botón de partituras (alternativa en footer) */}
             {instrumentoActual && (
               <Button
                 onClick={() => router.push(instrumentoActual.rutaPartituras)}
                 variant="outline"
-                className={`flex items-center gap-2 border-2 font-bold ${getBorderColor(instrumentoActual.nombre)} text-[#362511] hover:text-white ${getButtonColor(instrumentoActual.nombre).replace('text-white', '')}`}
+                className={`flex items-center gap-2 border-2 font-bold text-sm py-2 px-4 ${getBorderColor(instrumentoActual.nombre)} text-[#362511] hover:text-white ${getButtonColor(instrumentoActual.nombre).replace('text-white', '')}`}
               >
-                <Music className="w-4 h-4" />
+                <Music className="w-3 h-3" />
                 Partituras
               </Button>
             )}
@@ -265,7 +237,7 @@ export default function InstrumentosPage() {
             {/* Botón para cerrar */}
             <Button
               onClick={() => setSelectedInstrument(null)}
-              className="bg-[#795C34] hover:bg-[#65350F] text-white px-8 py-3 text-lg font-semibold shadow-lg transition-colors duration-200"
+              className="bg-[#795C34] hover:bg-[#65350F] text-white px-6 py-2 text-sm font-semibold shadow-md"
             >
               Cerrar
             </Button>
