@@ -1,4 +1,4 @@
-'use client'; // <-- ESTA ES LA LÍNEA QUE FALTABA
+'use client';
 
 // app/inicio/page.tsx
 import { useSession, signOut } from 'next-auth/react'
@@ -21,7 +21,6 @@ export default function InicioPage() {
   const { data: session } = useSession()
   const router = useRouter()
   
-  // Validar si es administrador
   const isAdmin = session?.user?.rol === 'administrador'
 
   const handleLogout = async () => {
@@ -86,66 +85,62 @@ export default function InicioPage() {
           {/* MÓDULOS PRINCIPALES */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             
-            {/* Módulo 1: Partituras */}
+            {/* Módulo 1: Partituras (Destacado) */}
             <Link href="/partituras" className="group md:col-span-2 lg:col-span-1">
-              <Card className="h-full bg-primary text-primary-foreground shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 rounded-[2rem] overflow-hidden relative border border-primary/50">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+              <Card className="h-full bg-white/40 backdrop-blur-md shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 rounded-[2rem] overflow-hidden relative border border-primary/40 hover:border-primary/80">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none group-hover:bg-primary/10 transition-colors"></div>
                 <CardContent className="p-8 flex flex-col h-full relative z-10 min-h-[250px] justify-between">
                   <div>
-                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
-                      <Music className="w-8 h-8 text-white" />
+                    <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      <Music className="w-8 h-8 text-primary" />
                     </div>
-                    <h3 className="text-2xl font-black mb-2 text-white">Mis Partituras</h3>
-                    <p className="text-sm text-primary-foreground/80 mb-6 font-medium">
+                    <h3 className="text-2xl font-black mb-2 text-foreground">Mis Partituras</h3>
+                    <p className="text-sm text-foreground/70 mb-6 font-medium">
                       Accede a tu repertorio musical, practica en casa y descarga los materiales de tus clases.
                     </p>
                   </div>
-                  <div className="flex items-center text-white font-bold text-sm bg-white/10 w-fit px-4 py-2 rounded-full backdrop-blur-md">
+                  <div className="flex items-center text-primary font-bold text-sm bg-primary/10 w-fit px-4 py-2 rounded-full backdrop-blur-md">
                     Explorar Archivos
                   </div>
                 </CardContent>
               </Card>
             </Link>
 
-            {/* Módulo 2: Estudiantes (SOLO ADMINISTRADORES) */}
-            {isAdmin && (
-              <Link href="/tabla" className="group">
-                <Card className="h-full bg-white/30 backdrop-blur-md border border-white/50 shadow-sm hover:shadow-xl hover:border-primary/50 hover:bg-white/40 transition-all duration-300 rounded-[2rem]">
-                  <CardContent className="p-8 flex flex-col h-full">
-                    <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                      <Users className="w-7 h-7 text-blue-600" />
-                    </div>
-                    <h3 className="text-xl font-bold text-foreground mb-2">Base de Datos</h3>
-                    <p className="text-sm text-foreground/60 mb-6 flex-1 font-medium">
-                      Consulta la tabla general de alumnos, edita expedientes y gestiona el estatus del personal.
-                    </p>
-                    <div className="flex items-center text-blue-600 font-bold text-sm">
-                      Ver Estudiantes
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            )}
+            {/* Módulo 2: Estudiantes */}
+            <Link href="/tabla" className="group">
+              <Card className="h-full bg-white/30 backdrop-blur-md border border-white/50 shadow-sm hover:shadow-xl hover:border-blue-500/50 hover:bg-white/40 transition-all duration-300 rounded-[2rem]">
+                <CardContent className="p-8 flex flex-col h-full">
+                  <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <Users className="w-7 h-7 text-blue-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Base de Datos</h3>
+                  <p className="text-sm text-foreground/60 mb-6 flex-1 font-medium">
+                    Consulta la tabla general de alumnos, edita expedientes y gestiona el estatus del personal.
+                  </p>
+                  <div className="flex items-center text-blue-600 font-bold text-sm">
+                    Ver Estudiantes
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
 
-            {/* Módulo 3: Inscripciones (SOLO ADMINISTRADORES) */}
-            {isAdmin && (
-              <Link href="/inscripcion_alumno" className="group">
-                <Card className="h-full bg-white/30 backdrop-blur-md border border-white/50 shadow-sm hover:shadow-xl hover:border-primary/50 hover:bg-white/40 transition-all duration-300 rounded-[2rem]">
-                  <CardContent className="p-8 flex flex-col h-full">
-                    <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                      <UserPlus className="w-7 h-7 text-purple-600" />
-                    </div>
-                    <h3 className="text-xl font-bold text-foreground mb-2">Inscripciones</h3>
-                    <p className="text-sm text-foreground/60 mb-6 flex-1 font-medium">
-                      Registra nuevos estudiantes en el sistema, asigna representantes y actualiza sus datos.
-                    </p>
-                    <div className="flex items-center text-purple-600 font-bold text-sm">
-                      Nuevo Alumno
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            )}
+            {/* Módulo 3: Inscripciones (Restaurado) */}
+            <Link href="/inscripcion_alumno" className="group">
+              <Card className="h-full bg-white/30 backdrop-blur-md border border-white/50 shadow-sm hover:shadow-xl hover:border-purple-500/50 hover:bg-white/40 transition-all duration-300 rounded-[2rem]">
+                <CardContent className="p-8 flex flex-col h-full">
+                  <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <UserPlus className="w-7 h-7 text-purple-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Inscripciones</h3>
+                  <p className="text-sm text-foreground/60 mb-6 flex-1 font-medium">
+                    Registra nuevos estudiantes en el sistema, asigna representantes y actualiza sus datos.
+                  </p>
+                  <div className="flex items-center text-purple-600 font-bold text-sm">
+                    Nuevo Alumno
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
           {/* SECCIÓN DE HISTORIA */}
