@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,10 +11,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Save, User, Music, School, Heart, Users, Search, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-
-// ============================================
-// TIPOS Y DATOS DE VENEZUELA
-// ============================================
 
 interface Municipio {
   nombre: string;
@@ -26,7 +22,6 @@ interface Estado {
   municipios: Municipio[];
 }
 
-// Datos completos de Venezuela (Estados, Municipios y Parroquias)
 const VENEZUELA_DATA: Estado[] = [
   {
     nombre: "Amazonas",
@@ -485,10 +480,6 @@ const VENEZUELA_DATA: Estado[] = [
   }
 ];
 
-// ============================================
-// TIPOS PARA EL FORMULARIO
-// ============================================
-
 interface FormData {
   nombres: string;
   apellidos: string;
@@ -524,10 +515,6 @@ interface FormData {
   representanteId?: string;
 }
 
-// ============================================
-// COMPONENTES PERSONALIZADOS
-// ============================================
-
 const agrupacionesMusicales = [
   "Iniciación Musical", "Coro Infantil", "Coro Juvenil Eduardo Plaza", "Coro Adulto",
   "Programa Educación Especial (P.E.E)", "Orquesta Afrovenzolana Infantil",
@@ -558,19 +545,17 @@ const nucleosLista = [
   "Santa Rosa", "Sarría", "seniat", "Soublette chacao", "TSJ", "universidad Santa Rosa"
 ];
 
-// Componente de carga
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F8F4F0] via-[#E8D5C4] to-[#D4B8A4] py-8 flex items-center justify-center">
+    <div className="min-h-screen p-4 md:p-8 font-montserrat flex items-center justify-center">
       <div className="text-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#9A784F] mx-auto mb-4" />
-        <p className="text-[#362511]">Cargando formulario...</p>
+        <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+        <p className="text-foreground/70 font-medium">Cargando formulario...</p>
       </div>
     </div>
   );
 }
 
-// Componente principal
 export default function RegistroPage() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
@@ -613,12 +598,12 @@ export default function RegistroPage() {
   const [instrumentosSecundariosSeleccionados, setInstrumentosSecundariosSeleccionados] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Función para calcular edad
   const calcularEdad = useCallback((fechaNacimiento: string): string => {
     if (!fechaNacimiento) return '';
     try {
@@ -637,7 +622,6 @@ export default function RegistroPage() {
     }
   }, []);
 
-  // Efecto para actualizar edad
   useEffect(() => {
     if (formData.fechaNacimiento) {
       const nuevaEdad = calcularEdad(formData.fechaNacimiento);
@@ -647,7 +631,6 @@ export default function RegistroPage() {
     }
   }, [formData.fechaNacimiento, formData.edad, calcularEdad]);
 
-  // Efectos para dependencias
   useEffect(() => {
     if (formData.lugarNacimiento) {
       setFormData(prev => ({ ...prev, municipio: '', parroquia: '' }));
@@ -660,7 +643,6 @@ export default function RegistroPage() {
     }
   }, [formData.municipio]);
 
-  // Validaciones
   const validarSoloLetras = (valor: string) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(valor);
   const validarSoloNumeros = (valor: string) => /^\d+$/.test(valor);
   const validarEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -760,17 +742,13 @@ export default function RegistroPage() {
     else if (!validarCedula(formData.cedulaIdentidad)) newErrors.cedulaIdentidad = 'La cédula debe tener entre 7 y 8 dígitos';
     
     if (!formData.fechaNacimiento) newErrors.fechaNacimiento = 'La fecha de nacimiento es obligatoria';
-    else if (!validarFechaNacimiento(formData.fechaNacimiento)) newErrors.fechaNacimiento = 'La fecha de nacimiento no es válida (no puede ser futura)';
+    else if (!validarFechaNacimiento(formData.fechaNacimiento)) newErrors.fechaNacimiento = 'La fecha de nacimiento no es válida';
     
     if (!formData.sexo) newErrors.sexo = 'El sexo es obligatorio';
     if (!formData.lugarNacimiento) newErrors.lugarNacimiento = 'El lugar de nacimiento es obligatorio';
     
     if (!formData.municipio) newErrors.municipio = 'El municipio es obligatorio';
-    else if (!validarSoloLetras(formData.municipio)) newErrors.municipio = 'El municipio solo puede contener letras y espacios';
-    else if (formData.municipio.trim().length < 3) newErrors.municipio = 'El municipio debe tener al menos 3 caracteres';
-    
     if (!formData.parroquia) newErrors.parroquia = 'La parroquia es obligatoria';
-    else if (formData.parroquia.trim().length < 3) newErrors.parroquia = 'La parroquia debe tener al menos 3 caracteres';
     
     if (!formData.direccionHabitacion.trim()) newErrors.direccionHabitacion = 'La dirección es obligatoria';
     else if (formData.direccionHabitacion.trim().length < 10) newErrors.direccionHabitacion = 'La dirección debe tener al menos 10 caracteres';
@@ -778,19 +756,11 @@ export default function RegistroPage() {
     if (!formData.numeroTelefonoCelular.trim()) newErrors.numeroTelefonoCelular = 'El teléfono celular es obligatorio';
     else if (!validarTelefono(formData.numeroTelefonoCelular)) newErrors.numeroTelefonoCelular = 'El teléfono debe tener al menos 10 dígitos';
     
-    if (formData.numeroTelefonoLocal.trim() && !validarSoloNumeros(formData.numeroTelefonoLocal)) {
-      newErrors.numeroTelefonoLocal = 'El teléfono local debe contener solo números';
-    } else if (formData.numeroTelefonoLocal.trim() && formData.numeroTelefonoLocal.length < 10) {
-      newErrors.numeroTelefonoLocal = 'El teléfono local debe tener al menos 10 dígitos';
-    }
-    
     if (!formData.correoElectronico.trim()) newErrors.correoElectronico = 'El correo electrónico es obligatorio';
     else if (!validarEmail(formData.correoElectronico)) newErrors.correoElectronico = 'El formato del correo electrónico no es válido';
     
     if (!formData.nucleo) newErrors.nucleo = 'El núcleo es obligatorio';
     if (!formData.añoInicio) newErrors.añoInicio = 'El año de inicio es obligatorio';
-    else if (!validarAñoInicio(formData.añoInicio)) newErrors.añoInicio = 'El año debe estar entre 1990 y el año actual';
-    
     if (!formData.agrupacionPertenece) newErrors.agrupacionPertenece = 'La orquesta actual es obligatoria';
     
     if (!formData.condicionAlumno) newErrors.condicionAlumno = 'Este campo es obligatorio';
@@ -800,28 +770,15 @@ export default function RegistroPage() {
 
     if (formData.condicionAlumno === 'si' && !formData.especifiqueCondicion.trim()) {
       newErrors.especifiqueCondicion = 'Por favor especifique la condición';
-    } else if (formData.condicionAlumno === 'si' && formData.especifiqueCondicion.trim().length < 5) {
-      newErrors.especifiqueCondicion = 'La descripción debe tener al menos 5 caracteres';
     }
-    
     if (formData.necesidadesEspecialesAprendizaje === 'si' && !formData.especifiqueNecesidades.trim()) {
       newErrors.especifiqueNecesidades = 'Por favor especifique las necesidades especiales';
-    } else if (formData.necesidadesEspecialesAprendizaje === 'si' && formData.especifiqueNecesidades.trim().length < 5) {
-      newErrors.especifiqueNecesidades = 'La descripción debe tener al menos 5 caracteres';
     }
-    
     if (formData.esAlergico === 'si' && !formData.especifiqueAlergia.trim()) {
       newErrors.especifiqueAlergia = 'Por favor especifique a qué medicamentos es alérgico';
-    } else if (formData.esAlergico === 'si' && formData.especifiqueAlergia.trim().length < 3) {
-      newErrors.especifiqueAlergia = 'La descripción debe tener al menos 3 caracteres';
     }
-    
     if (formData.estaVacunado === 'si' && !formData.numeroDosisVacuna) {
       newErrors.numeroDosisVacuna = 'Por favor especifique el número de dosis';
-    }
-
-    if (enfermedadesSeleccionadas.includes('otros') && !formData.otrasEnfermedades.trim()) {
-      newErrors.otrasEnfermedades = 'Por favor especifique las otras enfermedades';
     }
 
     setErrors(newErrors);
@@ -890,8 +847,6 @@ export default function RegistroPage() {
     return Array.from({ length: currentYear - 1990 + 1 }, (_, i) => (currentYear - i).toString());
   }, []);
 
-  const [searchTerm, setSearchTerm] = useState("");
-
   const nucleosFiltrados = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLocaleLowerCase('es');
     return nucleosLista.filter(nucleo =>
@@ -904,451 +859,469 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F8F4F0] via-[#E8D5C4] to-[#D4B8A4] py-8">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
-          <Link href="/inicio">
-            <Button variant="ghost" className="flex items-center gap-2 text-[#362511] hover:bg-[#795C34] hover:text-white">
-              <ArrowLeft className="w-4 h-4" />
-              Volver al Inicio
-            </Button>
-          </Link>
-          <h1 className="text-3xl font-bold text-[#362511] text-center drop-shadow-sm">
-            Sistema de Inscripción
-          </h1>
-          <div className="w-24"></div>
-        </div>
+    <div className="min-h-screen p-4 md:p-8 font-montserrat flex justify-center">
+      <div className="w-full max-w-[1400px] bg-white/10 backdrop-blur-2xl border border-white/30 rounded-[2.5rem] shadow-[0_20px_60px_rgba(91,43,23,0.15),inset_0_1px_0_rgba(255,255,255,0.6)] overflow-hidden relative">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/20 blur-[120px] rounded-full pointer-events-none"></div>
 
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center">
-            <div className="flex flex-col items-center">
-              <div className="w-12 h-12 rounded-full bg-[#9A784F] text-white flex items-center justify-center font-bold shadow-lg">1</div>
-              <span className="text-sm mt-2 font-bold text-[#362511]">Estudiante</span>
-            </div>
-            <div className="w-32 h-1 bg-[#9A784F] mx-4"></div>
-            <div className="flex flex-col items-center">
-              <div className="w-12 h-12 rounded-full bg-[#D4B8A4] text-[#795C34] flex items-center justify-center font-bold">2</div>
-              <span className="text-sm mt-2 text-[#795C34] font-medium">Representantes</span>
+        <div className="p-6 md:p-12 relative z-10">
+          <div className="flex items-center justify-between mb-8">
+            <Link href="/inicio">
+              <Button variant="ghost" className="rounded-full bg-white/30 hover:bg-white/50 backdrop-blur-md border border-white/50 h-12 w-12 p-0 flex items-center justify-center">
+                <ArrowLeft className="w-5 h-5 text-foreground" />
+              </Button>
+            </Link>
+            <h1 className="text-2xl md:text-4xl font-black text-foreground tracking-tight text-center">
+              Sistema de <span className="text-primary">Inscripción</span>
+            </h1>
+            <div className="w-12"></div>
+          </div>
+
+          <div className="flex items-center justify-center mb-10">
+            <div className="flex items-center">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold shadow-md">1</div>
+                <span className="text-xs mt-2 font-bold text-foreground">Estudiante</span>
+              </div>
+              <div className="w-24 md:w-32 h-1 bg-primary/40 mx-4"></div>
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-white/30 border border-white/50 text-foreground/50 flex items-center justify-center font-bold">2</div>
+                <span className="text-xs mt-2 text-foreground/50 font-medium">Representantes</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <Card className="max-w-4xl mx-auto shadow-2xl border-[#E8D5C4]">
-          <CardHeader className="bg-gradient-to-r from-[#9A784F] to-[#795C34] text-white relative">
-            <div className="absolute top-0 left-10 right-10 h-1 bg-[#E8D5C4] rounded-full"></div>
-            <div className="flex items-center gap-6">
-              <div className="bg-white/15 p-3 rounded-full"><User className="w-6 h-6" /></div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-2xl font-semibold">Registro de Estudiantes</CardTitle>
-                  <span className="text-sm bg-white/20 px-3 py-1 rounded-full">1/2</span>
-                </div>
-                <CardDescription className="text-[#F8F4F0] text-sm mt-1 opacity-90">
+          <Card className="bg-white/30 backdrop-blur-md border border-white/50 shadow-sm rounded-[2rem] overflow-hidden">
+            <div className="p-6 md:p-8 bg-primary/10 border-b border-white/40 flex items-center gap-4">
+              <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center border border-primary/30">
+                <User className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-foreground">Registro de Estudiantes</h2>
+                <p className="text-xs md:text-sm text-foreground/70 font-medium">
                   Complete los datos del estudiante. Después registrará a los representantes.
-                </CardDescription>
+                </p>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="p-6 bg-white">
-            <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Sección 1: Información Personal */}
-              <div>
-                <h3 className="text-lg font-bold text-[#362511] mb-4 flex items-center gap-2 border-b-2 border-[#E8D5C4] pb-2">
-                  <User className="w-5 h-5 text-[#9A784F]" />
-                  Información Personal
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Nombres <span className="text-red-500">*</span></Label>
-                    <Input value={formData.nombres} onChange={(e) => handleChange('nombres', e.target.value)} placeholder="Ingrese los nombres" className={errors.nombres ? 'border-red-500' : ''} />
-                    {errors.nombres && <p className="text-red-500 text-sm mt-1">{errors.nombres}</p>}
-                  </div>
 
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Apellidos <span className="text-red-500">*</span></Label>
-                    <Input value={formData.apellidos} onChange={(e) => handleChange('apellidos', e.target.value)} placeholder="Ingrese los apellidos" className={errors.apellidos ? 'border-red-500' : ''} />
-                    {errors.apellidos && <p className="text-red-500 text-sm mt-1">{errors.apellidos}</p>}
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Cédula de Identidad <span className="text-red-500">*</span></Label>
-                    <Input value={formData.cedulaIdentidad} onChange={(e) => handleChange('cedulaIdentidad', e.target.value)} placeholder="Ej: 12345678" maxLength={8} className={errors.cedulaIdentidad ? 'border-red-500' : ''} />
-                    {errors.cedulaIdentidad && <p className="text-red-500 text-sm mt-1">{errors.cedulaIdentidad}</p>}
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Fecha de Nacimiento <span className="text-red-500">*</span></Label>
-                    <Input type="date" value={formData.fechaNacimiento} onChange={(e) => handleChange('fechaNacimiento', e.target.value)} className={errors.fechaNacimiento ? 'border-red-500' : ''} />
-                    {errors.fechaNacimiento && <p className="text-red-500 text-sm mt-1">{errors.fechaNacimiento}</p>}
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Edad</Label>
-                    <Input value={formData.edad} readOnly placeholder="Se calcula automáticamente" className="bg-[#F8F4F0]" />
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Sexo <span className="text-red-500">*</span></Label>
-                    <Select value={formData.sexo} onValueChange={(value) => handleChange('sexo', value)}>
-                      <SelectTrigger className={errors.sexo ? 'border-red-500' : ''}>
-                        <SelectValue placeholder="Seleccione su sexo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="M">Masculino</SelectItem>
-                        <SelectItem value="F">Femenino</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.sexo && <p className="text-red-500 text-sm mt-1">{errors.sexo}</p>}
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <Label className="text-sm font-bold text-[#362511]">Lugar de Nacimiento (Estado) <span className="text-red-500">*</span></Label>
-                  <Select value={formData.lugarNacimiento} onValueChange={(value) => handleChange('lugarNacimiento', value)}>
-                    <SelectTrigger className={errors.lugarNacimiento ? 'border-red-500' : ''}>
-                      <SelectValue placeholder="Seleccione el estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {VENEZUELA_DATA.map((estado) => (
-                        <SelectItem key={estado.nombre} value={estado.nombre}>{estado.nombre}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.lugarNacimiento && <p className="text-red-500 text-sm mt-1">{errors.lugarNacimiento}</p>}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Municipio <span className="text-red-500">*</span></Label>
-                    <Select value={formData.municipio} onValueChange={(value) => handleChange('municipio', value)} disabled={!formData.lugarNacimiento}>
-                      <SelectTrigger className={errors.municipio ? 'border-red-500' : ''}>
-                        <SelectValue placeholder={!formData.lugarNacimiento ? "Primero seleccione un estado" : "Seleccione el municipio"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {formData.lugarNacimiento && VENEZUELA_DATA.find(e => e.nombre === formData.lugarNacimiento)?.municipios.map((m) => (
-                          <SelectItem key={m.nombre} value={m.nombre}>{m.nombre}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.municipio && <p className="text-red-500 text-sm mt-1">{errors.municipio}</p>}
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Parroquia <span className="text-red-500">*</span></Label>
-                    <Select value={formData.parroquia} onValueChange={(value) => handleChange('parroquia', value)} disabled={!formData.municipio}>
-                      <SelectTrigger className={errors.parroquia ? 'border-red-500' : ''}>
-                        <SelectValue placeholder={!formData.municipio ? "Primero seleccione un municipio" : "Seleccione la parroquia"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {formData.municipio && VENEZUELA_DATA.find(e => e.nombre === formData.lugarNacimiento)
-                          ?.municipios.find(m => m.nombre === formData.municipio)?.parroquias.map((p) => (
-                            <SelectItem key={p} value={p}>{p}</SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.parroquia && <p className="text-red-500 text-sm mt-1">{errors.parroquia}</p>}
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <Label className="text-sm font-bold text-[#362511]">Dirección de Habitación <span className="text-red-500">*</span></Label>
-                  <Input value={formData.direccionHabitacion} onChange={(e) => handleChange('direccionHabitacion', e.target.value)} placeholder="Ingrese su dirección completa" className={errors.direccionHabitacion ? 'border-red-500' : ''} />
-                  {errors.direccionHabitacion && <p className="text-red-500 text-sm mt-1">{errors.direccionHabitacion}</p>}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Teléfono Celular <span className="text-red-500">*</span></Label>
-                    <Input value={formData.numeroTelefonoCelular} onChange={(e) => handleChange('numeroTelefonoCelular', e.target.value)} placeholder="Ej: 04121234567" maxLength={11} className={errors.numeroTelefonoCelular ? 'border-red-500' : ''} />
-                    {errors.numeroTelefonoCelular && <p className="text-red-500 text-sm mt-1">{errors.numeroTelefonoCelular}</p>}
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Teléfono Local (Opcional)</Label>
-                    <Input value={formData.numeroTelefonoLocal} onChange={(e) => handleChange('numeroTelefonoLocal', e.target.value)} placeholder="Ej: 02121234567" maxLength={11} className={errors.numeroTelefonoLocal ? 'border-red-500' : ''} />
-                    {errors.numeroTelefonoLocal && <p className="text-red-500 text-sm mt-1">{errors.numeroTelefonoLocal}</p>}
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Correo Electrónico <span className="text-red-500">*</span></Label>
-                    <Input type="email" value={formData.correoElectronico} onChange={(e) => handleChange('correoElectronico', e.target.value)} placeholder="ejemplo@correo.com" className={errors.correoElectronico ? 'border-red-500' : ''} />
-                    {errors.correoElectronico && <p className="text-red-500 text-sm mt-1">{errors.correoElectronico}</p>}
-                  </div>
-                </div>
-              </div>
-
-              {/* Sección 2: Información Musical */}
-              <div>
-                <h3 className="text-lg font-bold text-[#362511] mb-4 flex items-center gap-2 border-b-2 border-[#E8D5C4] pb-2">
-                  <Music className="w-5 h-5 text-[#795C34]" />
-                  Información Musical
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Núcleo <span className="text-red-500">*</span></Label>
-                    <Select value={formData.nucleo} onValueChange={(value) => handleChange('nucleo', value)}>
-                      <SelectTrigger className={errors.nucleo ? 'border-red-500' : ''}>
-                        <SelectValue placeholder="Seleccione el núcleo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <div className="sticky top-0 bg-white p-2 border-b">
-                          <div className="relative">
-                            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                            <Input placeholder="Buscar núcleo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-8 h-8" />
-                          </div>
-                        </div>
-                        {nucleosFiltrados.map((nucleo) => (
-                          <SelectItem key={nucleo} value={nucleo}>{nucleo}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.nucleo && <p className="text-red-500 text-sm mt-1">{errors.nucleo}</p>}
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Año en que Inició <span className="text-red-500">*</span></Label>
-                    <Select value={formData.añoInicio} onValueChange={(value) => handleChange('añoInicio', value)}>
-                      <SelectTrigger className={errors.añoInicio ? 'border-red-500' : ''}>
-                        <SelectValue placeholder="Seleccione el año" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {years.map((year) => (
-                          <SelectItem key={year} value={year}>{year}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.añoInicio && <p className="text-red-500 text-sm mt-1">{errors.añoInicio}</p>}
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Orquesta Actual <span className="text-red-500">*</span></Label>
-                    <Select value={formData.agrupacionPertenece} onValueChange={(value) => handleChange('agrupacionPertenece', value)}>
-                      <SelectTrigger className={errors.agrupacionPertenece ? 'border-red-500' : ''}>
-                        <SelectValue placeholder="Seleccione la orquesta" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {agrupacionesMusicales.map((agrupacion) => (
-                          <SelectItem key={agrupacion} value={agrupacion}>{agrupacion}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.agrupacionPertenece && <p className="text-red-500 text-sm mt-1">{errors.agrupacionPertenece}</p>}
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Instrumento Principal (Opcional)</Label>
-                    <Select value={formData.instrumentoPrincipal} onValueChange={(value) => handleChange('instrumentoPrincipal', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione el instrumento" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {instrumentosMusicales.map((instrumento) => (
-                          <SelectItem key={instrumento} value={instrumento}>{instrumento}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <Label className="text-sm font-bold text-[#362511] mb-3 block">Instrumentos Secundarios (Opcional)</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {instrumentosMusicales.map((instrumento) => (
-                      <div key={instrumento} className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={instrumentosSecundariosSeleccionados.includes(instrumento)}
-                          onCheckedChange={(checked) => handleInstrumentoSecundarioChange(instrumento, !!checked)}
-                          disabled={instrumento === formData.instrumentoPrincipal}
-                        />
-                        <Label className={`text-sm ${instrumento === formData.instrumentoPrincipal ? 'text-gray-400' : 'text-[#362511]'}`}>
-                          {instrumento} {instrumento === formData.instrumentoPrincipal && ' (Principal)'}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <Label className="text-sm font-bold text-[#362511]">Agrupaciones a las que ha pertenecido anteriormente</Label>
-                  <Input value={formData.nombreAgrupacionesPertenecio} onChange={(e) => handleChange('nombreAgrupacionesPertenecio', e.target.value)} placeholder="Ej: Orquesta Infantil, Coro, Ensemble de Cuerdas" />
-                </div>
-              </div>
-
-              {/* Sección 3: Información Académica */}
-              <div>
-                <h3 className="text-lg font-bold text-[#362511] mb-4 flex items-center gap-2 border-b-2 border-[#E8D5C4] pb-2">
-                  <School className="w-5 h-5 text-[#65350F]" />
-                  Información Académica
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Nombre del Colegio (Opcional)</Label>
-                    <Input value={formData.nombreColegio} onChange={(e) => handleChange('nombreColegio', e.target.value)} placeholder="Ingrese el nombre del colegio" />
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-bold text-[#362511]">Grado que Cursa (Opcional)</Label>
-                    <Select value={formData.gradoCursa} onValueChange={(value) => handleChange('gradoCursa', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione el grado (opcional)" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {gradosEscolares.map((grado) => (
-                          <SelectItem key={grado} value={grado}>{grado}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sección 4: Información de Salud */}
-              <div>
-                <h3 className="text-lg font-bold text-[#362511] mb-4 flex items-center gap-2 border-b-2 border-[#E8D5C4] pb-2">
-                  <Heart className="w-5 h-5 text-[#80471C]" />
-                  Información de Salud
-                </h3>
-
-                <div className="mb-6">
-                  <Label className="text-sm font-bold text-[#362511] mb-3 block">¿Padece alguna enfermedad?</Label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {["asma", "alergia", "diabetes", "reumatismo", "otros"].map((enf) => (
-                      <div key={enf} className="flex items-center space-x-2">
-                        <Checkbox checked={enfermedadesSeleccionadas.includes(enf)} onCheckedChange={(checked) => handleEnfermedadChange(enf, !!checked)} />
-                        <Label className="capitalize">{enf}</Label>
-                      </div>
-                    ))}
-                  </div>
-
-                  {enfermedadesSeleccionadas.includes('otros') && (
-                    <div className="mt-3">
-                      <Label>Especifique otras enfermedades</Label>
-                      <Input value={formData.otrasEnfermedades} onChange={(e) => handleChange('otrasEnfermedades', e.target.value)} placeholder="Especifique las otras enfermedades" />
+            <CardContent className="p-6 md:p-10">
+              <form onSubmit={handleSubmit} className="space-y-10">
+                
+                {/* Sección 1: Información Personal */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-black text-foreground flex items-center gap-2 border-b border-black/10 pb-3">
+                    <User className="w-5 h-5 text-primary" />
+                    Información Personal
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Nombres <span className="text-destructive">*</span></Label>
+                      <Input value={formData.nombres} onChange={(e) => handleChange('nombres', e.target.value)} placeholder="Ingrese los nombres" className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm ${errors.nombres ? 'border-destructive' : ''}`} />
+                      {errors.nombres && <p className="text-destructive text-xs mt-1">{errors.nombres}</p>}
                     </div>
-                  )}
-                </div>
 
-                <div className="mb-6">
-                  <Label className="text-sm font-bold text-[#362511] block mb-3">¿El alumno posee alguna condición especial? <span className="text-red-500">*</span></Label>
-                  <Select value={formData.condicionAlumno} onValueChange={(value) => handleChange('condicionAlumno', value)}>
-                    <SelectTrigger className={errors.condicionAlumno ? 'border-red-500' : ''}>
-                      <SelectValue placeholder="Seleccione una opción" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="si">Sí</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.condicionAlumno && <p className="text-red-500 text-sm mt-1">{errors.condicionAlumno}</p>}
-
-                  {formData.condicionAlumno === 'si' && (
-                    <div className="mt-3">
-                      <Label>Especifique la condición <span className="text-red-500">*</span></Label>
-                      <Input value={formData.especifiqueCondicion} onChange={(e) => handleChange('especifiqueCondicion', e.target.value)} placeholder="Describa la condición especial" className={errors.especifiqueCondicion ? 'border-red-500' : ''} />
-                      {errors.especifiqueCondicion && <p className="text-red-500 text-sm mt-1">{errors.especifiqueCondicion}</p>}
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Apellidos <span className="text-destructive">*</span></Label>
+                      <Input value={formData.apellidos} onChange={(e) => handleChange('apellidos', e.target.value)} placeholder="Ingrese los apellidos" className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm ${errors.apellidos ? 'border-destructive' : ''}`} />
+                      {errors.apellidos && <p className="text-destructive text-xs mt-1">{errors.apellidos}</p>}
                     </div>
-                  )}
-                </div>
 
-                <div className="mb-6">
-                  <Label className="text-sm font-bold text-[#362511] block mb-3">¿El alumno tiene necesidades especiales de aprendizaje? <span className="text-red-500">*</span></Label>
-                  <Select value={formData.necesidadesEspecialesAprendizaje} onValueChange={(value) => handleChange('necesidadesEspecialesAprendizaje', value)}>
-                    <SelectTrigger className={errors.necesidadesEspecialesAprendizaje ? 'border-red-500' : ''}>
-                      <SelectValue placeholder="Seleccione una opción" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="si">Sí</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.necesidadesEspecialesAprendizaje && <p className="text-red-500 text-sm mt-1">{errors.necesidadesEspecialesAprendizaje}</p>}
-
-                  {formData.necesidadesEspecialesAprendizaje === 'si' && (
-                    <div className="mt-3">
-                      <Label>Especifique las necesidades especiales <span className="text-red-500">*</span></Label>
-                      <Input value={formData.especifiqueNecesidades} onChange={(e) => handleChange('especifiqueNecesidades', e.target.value)} placeholder="Describa las necesidades especiales de aprendizaje" className={errors.especifiqueNecesidades ? 'border-red-500' : ''} />
-                      {errors.especifiqueNecesidades && <p className="text-red-500 text-sm mt-1">{errors.especifiqueNecesidades}</p>}
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Cédula de Identidad <span className="text-destructive">*</span></Label>
+                      <Input value={formData.cedulaIdentidad} onChange={(e) => handleChange('cedulaIdentidad', e.target.value)} placeholder="Ej: 12345678" maxLength={8} className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm ${errors.cedulaIdentidad ? 'border-destructive' : ''}`} />
+                      {errors.cedulaIdentidad && <p className="text-destructive text-xs mt-1">{errors.cedulaIdentidad}</p>}
                     </div>
-                  )}
-                </div>
 
-                <div className="mb-6">
-                  <Label className="text-sm font-bold text-[#362511] block mb-3">¿El alumno es alérgico a algún medicamento? <span className="text-red-500">*</span></Label>
-                  <Select value={formData.esAlergico} onValueChange={(value) => handleChange('esAlergico', value)}>
-                    <SelectTrigger className={errors.esAlergico ? 'border-red-500' : ''}>
-                      <SelectValue placeholder="Seleccione una opción" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="si">Sí</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.esAlergico && <p className="text-red-500 text-sm mt-1">{errors.esAlergico}</p>}
-
-                  {formData.esAlergico === 'si' && (
-                    <div className="mt-3">
-                      <Label>Especifique a qué medicamentos es alérgico <span className="text-red-500">*</span></Label>
-                      <Input value={formData.especifiqueAlergia} onChange={(e) => handleChange('especifiqueAlergia', e.target.value)} placeholder="Liste los medicamentos" className={errors.especifiqueAlergia ? 'border-red-500' : ''} />
-                      {errors.especifiqueAlergia && <p className="text-red-500 text-sm mt-1">{errors.especifiqueAlergia}</p>}
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Fecha de Nacimiento <span className="text-destructive">*</span></Label>
+                      <Input type="date" value={formData.fechaNacimiento} onChange={(e) => handleChange('fechaNacimiento', e.target.value)} className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm ${errors.fechaNacimiento ? 'border-destructive' : ''}`} />
+                      {errors.fechaNacimiento && <p className="text-destructive text-xs mt-1">{errors.fechaNacimiento}</p>}
                     </div>
-                  )}
-                </div>
 
-                <div className="mb-6">
-                  <Label className="text-sm font-bold text-[#362511] block mb-3">¿El alumno está vacunado contra el COVID-19? <span className="text-red-500">*</span></Label>
-                  <Select value={formData.estaVacunado} onValueChange={(value) => handleChange('estaVacunado', value)}>
-                    <SelectTrigger className={errors.estaVacunado ? 'border-red-500' : ''}>
-                      <SelectValue placeholder="Seleccione una opción" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="si">Sí</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.estaVacunado && <p className="text-red-500 text-sm mt-1">{errors.estaVacunado}</p>}
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Edad</Label>
+                      <Input value={formData.edad} readOnly placeholder="Se calcula automáticamente" className="bg-white/20 border border-white/40 rounded-2xl px-4 py-3 text-sm text-foreground/60 backdrop-blur-sm" />
+                    </div>
 
-                  {formData.estaVacunado === 'si' && (
-                    <div className="mt-3">
-                      <Label>Número de dosis <span className="text-red-500">*</span></Label>
-                      <Select value={formData.numeroDosisVacuna} onValueChange={(value) => handleChange('numeroDosisVacuna', value)}>
-                        <SelectTrigger className={errors.numeroDosisVacuna ? 'border-red-500' : ''}>
-                          <SelectValue placeholder="Seleccione el número de dosis" />
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Sexo <span className="text-destructive">*</span></Label>
+                      <Select value={formData.sexo} onValueChange={(value) => handleChange('sexo', value)}>
+                        <SelectTrigger className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.sexo ? 'border-destructive' : ''}`}>
+                          <SelectValue placeholder="Seleccione su sexo" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1 dosis</SelectItem>
-                          <SelectItem value="2">2 dosis</SelectItem>
-                          <SelectItem value="3">3 dosis</SelectItem>
-                          <SelectItem value="4">4 dosis</SelectItem>
-                          <SelectItem value="mas">Más de 4 dosis</SelectItem>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl">
+                          <SelectItem value="M">Masculino</SelectItem>
+                          <SelectItem value="F">Femenino</SelectItem>
                         </SelectContent>
                       </Select>
-                      {errors.numeroDosisVacuna && <p className="text-red-500 text-sm mt-1">{errors.numeroDosisVacuna}</p>}
+                      {errors.sexo && <p className="text-destructive text-xs mt-1">{errors.sexo}</p>}
                     </div>
-                  )}
-                </div>
-              </div>
+                  </div>
 
-              <div className="flex gap-4 pt-6">
-                <Button type="submit" className="flex-1 bg-[#9A784F] hover:bg-[#795C34] text-white font-bold" size="lg" disabled={isSubmitting}>
-                  {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Procesando...</> : <><Save className="w-4 h-4 mr-2" /> Continuar con Representantes</>}
-                </Button>
-                <Link href="/inicio" className="flex-1">
-                  <Button type="button" variant="outline" className="w-full border-[#E8D5C4] text-[#362511] hover:bg-[#F8F4F0] font-bold" size="lg" disabled={isSubmitting}>Cancelar</Button>
-                </Link>
-              </div>
-
-              <div className="bg-[#F8F4F0] border border-[#E8D5C4] rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <Users className="w-5 h-5 text-[#9A784F] mt-0.5" />
                   <div>
-                    <h4 className="font-bold text-[#362511]">Próximo paso: Registro de Representantes</h4>
-                    <p className="text-[#65350F] text-sm mt-1">Después de completar este formulario, continuará con el registro de los datos de los representantes.</p>
+                    <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Lugar de Nacimiento (Estado) <span className="text-destructive">*</span></Label>
+                    <Select value={formData.lugarNacimiento} onValueChange={(value) => handleChange('lugarNacimiento', value)}>
+                      <SelectTrigger className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.lugarNacimiento ? 'border-destructive' : ''}`}>
+                        <SelectValue placeholder="Seleccione el estado" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl max-h-60">
+                        {VENEZUELA_DATA.map((estado) => (
+                          <SelectItem key={estado.nombre} value={estado.nombre}>{estado.nombre}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.lugarNacimiento && <p className="text-destructive text-xs mt-1">{errors.lugarNacimiento}</p>}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Municipio <span className="text-destructive">*</span></Label>
+                      <Select value={formData.municipio} onValueChange={(value) => handleChange('municipio', value)} disabled={!formData.lugarNacimiento}>
+                        <SelectTrigger className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.municipio ? 'border-destructive' : ''}`}>
+                          <SelectValue placeholder={!formData.lugarNacimiento ? "Seleccione un estado primero" : "Seleccione el municipio"} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl max-h-60">
+                          {formData.lugarNacimiento && VENEZUELA_DATA.find(e => e.nombre === formData.lugarNacimiento)?.municipios.map((m) => (
+                            <SelectItem key={m.nombre} value={m.nombre}>{m.nombre}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.municipio && <p className="text-destructive text-xs mt-1">{errors.municipio}</p>}
+                    </div>
+
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Parroquia <span className="text-destructive">*</span></Label>
+                      <Select value={formData.parroquia} onValueChange={(value) => handleChange('parroquia', value)} disabled={!formData.municipio}>
+                        <SelectTrigger className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.parroquia ? 'border-destructive' : ''}`}>
+                          <SelectValue placeholder={!formData.municipio ? "Seleccione un municipio primero" : "Seleccione la parroquia"} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl max-h-60">
+                          {formData.municipio && VENEZUELA_DATA.find(e => e.nombre === formData.lugarNacimiento)
+                            ?.municipios.find(m => m.nombre === formData.municipio)?.parroquias.map((p) => (
+                              <SelectItem key={p} value={p}>{p}</SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.parroquia && <p className="text-destructive text-xs mt-1">{errors.parroquia}</p>}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Dirección de Habitación <span className="text-destructive">*</span></Label>
+                    <Input value={formData.direccionHabitacion} onChange={(e) => handleChange('direccionHabitacion', e.target.value)} placeholder="Ingrese su dirección completa" className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm ${errors.direccionHabitacion ? 'border-destructive' : ''}`} />
+                    {errors.direccionHabitacion && <p className="text-destructive text-xs mt-1">{errors.direccionHabitacion}</p>}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Teléfono Celular <span className="text-destructive">*</span></Label>
+                      <Input value={formData.numeroTelefonoCelular} onChange={(e) => handleChange('numeroTelefonoCelular', e.target.value)} placeholder="Ej: 04121234567" maxLength={11} className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm ${errors.numeroTelefonoCelular ? 'border-destructive' : ''}`} />
+                      {errors.numeroTelefonoCelular && <p className="text-destructive text-xs mt-1">{errors.numeroTelefonoCelular}</p>}
+                    </div>
+
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Teléfono Local</Label>
+                      <Input value={formData.numeroTelefonoLocal} onChange={(e) => handleChange('numeroTelefonoLocal', e.target.value)} placeholder="Ej: 02121234567" maxLength={11} className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm ${errors.numeroTelefonoLocal ? 'border-destructive' : ''}`} />
+                      {errors.numeroTelefonoLocal && <p className="text-destructive text-xs mt-1">{errors.numeroTelefonoLocal}</p>}
+                    </div>
+
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Correo Electrónico <span className="text-destructive">*</span></Label>
+                      <Input type="email" value={formData.correoElectronico} onChange={(e) => handleChange('correoElectronico', e.target.value)} placeholder="correo@ejemplo.com" className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm ${errors.correoElectronico ? 'border-destructive' : ''}`} />
+                      {errors.correoElectronico && <p className="text-destructive text-xs mt-1">{errors.correoElectronico}</p>}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+
+                {/* Sección 2: Información Musical */}
+                <div className="space-y-6 pt-6">
+                  <h3 className="text-lg font-black text-foreground flex items-center gap-2 border-b border-black/10 pb-3">
+                    <Music className="w-5 h-5 text-primary" />
+                    Información Musical
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Núcleo <span className="text-destructive">*</span></Label>
+                      <Select value={formData.nucleo} onValueChange={(value) => handleChange('nucleo', value)}>
+                        <SelectTrigger className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.nucleo ? 'border-destructive' : ''}`}>
+                          <SelectValue placeholder="Seleccione el núcleo" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl max-h-60">
+                          <div className="sticky top-0 bg-white/80 backdrop-blur-md p-2 border-b border-black/10">
+                            <div className="relative">
+                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/40 w-4 h-4" />
+                              <Input placeholder="Buscar núcleo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 rounded-xl bg-white/50 border border-white/60 text-xs" />
+                            </div>
+                          </div>
+                          {nucleosFiltrados.map((nucleo) => (
+                            <SelectItem key={nucleo} value={nucleo}>{nucleo}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.nucleo && <p className="text-destructive text-xs mt-1">{errors.nucleo}</p>}
+                    </div>
+
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Año en que Inició <span className="text-destructive">*</span></Label>
+                      <Select value={formData.añoInicio} onValueChange={(value) => handleChange('añoInicio', value)}>
+                        <SelectTrigger className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.añoInicio ? 'border-destructive' : ''}`}>
+                          <SelectValue placeholder="Seleccione el año" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl max-h-60">
+                          {years.map((year) => (
+                            <SelectItem key={year} value={year}>{year}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.añoInicio && <p className="text-destructive text-xs mt-1">{errors.añoInicio}</p>}
+                    </div>
+
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Orquesta Actual <span className="text-destructive">*</span></Label>
+                      <Select value={formData.agrupacionPertenece} onValueChange={(value) => handleChange('agrupacionPertenece', value)}>
+                        <SelectTrigger className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.agrupacionPertenece ? 'border-destructive' : ''}`}>
+                          <SelectValue placeholder="Seleccione la orquesta" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl max-h-60">
+                          {agrupacionesMusicales.map((agrupacion) => (
+                            <SelectItem key={agrupacion} value={agrupacion}>{agrupacion}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.agrupacionPertenece && <p className="text-destructive text-xs mt-1">{errors.agrupacionPertenece}</p>}
+                    </div>
+
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Instrumento Principal</Label>
+                      <Select value={formData.instrumentoPrincipal} onValueChange={(value) => handleChange('instrumentoPrincipal', value)}>
+                        <SelectTrigger className="bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm">
+                          <SelectValue placeholder="Seleccione el instrumento" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl">
+                          {instrumentosMusicales.map((instrumento) => (
+                            <SelectItem key={instrumento} value={instrumento}>{instrumento}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-3">Instrumentos Secundarios</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-white/20 p-4 rounded-2xl border border-white/40">
+                      {instrumentosMusicales.map((instrumento) => (
+                        <div key={instrumento} className="flex items-center space-x-3">
+                          <Checkbox
+                            checked={instrumentosSecundariosSeleccionados.includes(instrumento)}
+                            onCheckedChange={(checked) => handleInstrumentoSecundarioChange(instrumento, !!checked)}
+                            disabled={instrumento === formData.instrumentoPrincipal}
+                            className="rounded-md border-primary/50 text-primary focus:ring-primary/50"
+                          />
+                          <Label className={`text-sm font-medium ${instrumento === formData.instrumentoPrincipal ? 'text-foreground/40' : 'text-foreground'}`}>
+                            {instrumento} {instrumento === formData.instrumentoPrincipal && '(Principal)'}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Agrupaciones Anteriores</Label>
+                    <Input value={formData.nombreAgrupacionesPertenecio} onChange={(e) => handleChange('nombreAgrupacionesPertenecio', e.target.value)} placeholder="Ej: Orquesta Infantil, Coro..." className="bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm" />
+                  </div>
+                </div>
+
+                {/* Sección 3: Información Académica */}
+                <div className="space-y-6 pt-6">
+                  <h3 className="text-lg font-black text-foreground flex items-center gap-2 border-b border-black/10 pb-3">
+                    <School className="w-5 h-5 text-primary" />
+                    Información Académica
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Nombre del Colegio</Label>
+                      <Input value={formData.nombreColegio} onChange={(e) => handleChange('nombreColegio', e.target.value)} placeholder="Ingrese el nombre del colegio" className="bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm" />
+                    </div>
+
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Grado que Cursa</Label>
+                      <Select value={formData.gradoCursa} onValueChange={(value) => handleChange('gradoCursa', value)}>
+                        <SelectTrigger className="bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm">
+                          <SelectValue placeholder="Seleccione el grado" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl max-h-60">
+                          {gradosEscolares.map((grado) => (
+                            <SelectItem key={grado} value={grado}>{grado}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sección 4: Información de Salud */}
+                <div className="space-y-6 pt-6">
+                  <h3 className="text-lg font-black text-foreground flex items-center gap-2 border-b border-black/10 pb-3">
+                    <Heart className="w-5 h-5 text-primary" />
+                    Información de Salud
+                  </h3>
+
+                  <div className="space-y-3">
+                    <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70">¿Padece alguna enfermedad?</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-white/20 p-4 rounded-2xl border border-white/40">
+                      {["asma", "alergia", "diabetes", "reumatismo", "otros"].map((enf) => (
+                        <div key={enf} className="flex items-center space-x-3">
+                          <Checkbox checked={enfermedadesSeleccionadas.includes(enf)} onCheckedChange={(checked) => handleEnfermedadChange(enf, !!checked)} className="rounded-md border-primary/50 text-primary" />
+                          <Label className="text-sm font-medium capitalize text-foreground">{enf}</Label>
+                        </div>
+                      ))}
+                    </div>
+
+                    {enfermedadesSeleccionadas.includes('otros') && (
+                      <div className="mt-3">
+                        <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Especifique otras enfermedades</Label>
+                        <Input value={formData.otrasEnfermedades} onChange={(e) => handleChange('otrasEnfermedades', e.target.value)} placeholder="Especifique..." className="bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">¿Posee condición especial? <span className="text-destructive">*</span></Label>
+                      <Select value={formData.condicionAlumno} onValueChange={(value) => handleChange('condicionAlumno', value)}>
+                        <SelectTrigger className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.condicionAlumno ? 'border-destructive' : ''}`}>
+                          <SelectValue placeholder="Seleccione una opción" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl">
+                          <SelectItem value="si">Sí</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.condicionAlumno && <p className="text-destructive text-xs mt-1">{errors.condicionAlumno}</p>}
+
+                      {formData.condicionAlumno === 'si' && (
+                        <div className="mt-3">
+                          <Input value={formData.especifiqueCondicion} onChange={(e) => handleChange('especifiqueCondicion', e.target.value)} placeholder="Describa la condición especial" className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.especifiqueCondicion ? 'border-destructive' : ''}`} />
+                          {errors.especifiqueCondicion && <p className="text-destructive text-xs mt-1">{errors.especifiqueCondicion}</p>}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">¿Necesidades especiales de aprendizaje? <span className="text-destructive">*</span></Label>
+                      <Select value={formData.necesidadesEspecialesAprendizaje} onValueChange={(value) => handleChange('necesidadesEspecialesAprendizaje', value)}>
+                        <SelectTrigger className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.necesidadesEspecialesAprendizaje ? 'border-destructive' : ''}`}>
+                          <SelectValue placeholder="Seleccione una opción" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl">
+                          <SelectItem value="si">Sí</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.necesidadesEspecialesAprendizaje && <p className="text-destructive text-xs mt-1">{errors.necesidadesEspecialesAprendizaje}</p>}
+
+                      {formData.necesidadesEspecialesAprendizaje === 'si' && (
+                        <div className="mt-3">
+                          <Input value={formData.especifiqueNecesidades} onChange={(e) => handleChange('especifiqueNecesidades', e.target.value)} placeholder="Describa las necesidades" className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.especifiqueNecesidades ? 'border-destructive' : ''}`} />
+                          {errors.especifiqueNecesidades && <p className="text-destructive text-xs mt-1">{errors.especifiqueNecesidades}</p>}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">¿Es alérgico a medicamentos? <span className="text-destructive">*</span></Label>
+                      <Select value={formData.esAlergico} onValueChange={(value) => handleChange('esAlergico', value)}>
+                        <SelectTrigger className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.esAlergico ? 'border-destructive' : ''}`}>
+                          <SelectValue placeholder="Seleccione una opción" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl">
+                          <SelectItem value="si">Sí</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.esAlergico && <p className="text-destructive text-xs mt-1">{errors.esAlergico}</p>}
+
+                      {formData.esAlergico === 'si' && (
+                        <div className="mt-3">
+                          <Input value={formData.especifiqueAlergia} onChange={(e) => handleChange('especifiqueAlergia', e.target.value)} placeholder="Liste los medicamentos" className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.especifiqueAlergia ? 'border-destructive' : ''}`} />
+                          {errors.especifiqueAlergia && <p className="text-destructive text-xs mt-1">{errors.especifiqueAlergia}</p>}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">¿Vacunado contra COVID-19? <span className="text-destructive">*</span></Label>
+                      <Select value={formData.estaVacunado} onValueChange={(value) => handleChange('estaVacunado', value)}>
+                        <SelectTrigger className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.estaVacunado ? 'border-destructive' : ''}`}>
+                          <SelectValue placeholder="Seleccione una opción" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl">
+                          <SelectItem value="si">Sí</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.estaVacunado && <p className="text-destructive text-xs mt-1">{errors.estaVacunado}</p>}
+
+                      {formData.estaVacunado === 'si' && (
+                        <div className="mt-3">
+                          <Select value={formData.numeroDosisVacuna} onValueChange={(value) => handleChange('numeroDosisVacuna', value)}>
+                            <SelectTrigger className={`bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm ${errors.numeroDosisVacuna ? 'border-destructive' : ''}`}>
+                              <SelectValue placeholder="Número de dosis" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl">
+                              <SelectItem value="1">1 dosis</SelectItem>
+                              <SelectItem value="2">2 dosis</SelectItem>
+                              <SelectItem value="3">3 dosis</SelectItem>
+                              <SelectItem value="4">4 dosis</SelectItem>
+                              <SelectItem value="mas">Más de 4 dosis</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {errors.numeroDosisVacuna && <p className="text-destructive text-xs mt-1">{errors.numeroDosisVacuna}</p>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white/20 border border-white/40 rounded-3xl p-6 backdrop-blur-md flex items-center gap-4">
+                  <Users className="w-6 h-6 text-primary flex-shrink-0" />
+                  <div>
+                    <h4 className="font-black text-foreground text-sm uppercase tracking-wider">Próximo paso: Registro de Representantes</h4>
+                    <p className="text-foreground/70 text-xs md:text-sm font-medium mt-0.5">Después de completar este formulario, continuará con el registro de los datos de los representantes.</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row justify-end gap-4 pt-4">
+                  <Link href="/inicio" className="w-full md:w-auto">
+                    <Button type="button" variant="ghost" className="w-full md:w-auto rounded-2xl px-8 py-4 h-auto font-bold text-foreground/70 hover:bg-white/20">
+                      Cancelar
+                    </Button>
+                  </Link>
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="w-full md:w-auto bg-primary hover:bg-primary/90 text-white rounded-2xl px-8 py-4 h-auto font-bold shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Procesando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-5 h-5" />
+                        Continuar con Representantes
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
