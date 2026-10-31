@@ -240,12 +240,12 @@ function HomeContent() {
               
               <p className="text-foreground/80 text-lg leading-relaxed">
                 El Sistema Nacional de Orquestas y Coros Juveniles e Infantiles de Venezuela, 
-                conocido como <strong className="text-foreground">"El Sistema"</strong>, es un programa de educación musical fundado 
+                conocido como <strong className="text-foreground">'El Sistema'</strong>, es un programa de educación musical fundado 
                 en 1975 por el maestro José Antonio Abreu.
               </p>
               
               <blockquote className="italic border-l-4 border-primary pl-6 my-8 text-foreground text-left bg-white/20 p-6 rounded-r-2xl">
-                "La música es un instrumento irremplazable para unir a las personas."
+                'La música es un instrumento irremplazable para unir a las personas.'
                 <footer className="mt-2 text-foreground/60 text-sm not-italic font-bold uppercase tracking-wider">- José Antonio Abreu</footer>
               </blockquote>
             </div>
