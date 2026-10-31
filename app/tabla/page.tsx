@@ -1,7 +1,7 @@
 // app/tabla/page.tsx
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { 
   Search, User, Phone, Mail, Calendar, MapPin, Music, Users, Eye, 
-  Filter, Download, X, SortAsc, SortDesc, Home, Table as TableIcon, Loader2
+  Filter, Download, X, SortAsc, SortDesc, Home, Table as TableIcon, XCircle, LoaderCircle
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -23,9 +23,9 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/navigation';
-import * as XLSX from 'xlsx';
 import AdminProtection from '@/components/AdminProtection';
 import { useSession } from 'next-auth/react';
+import { toast } from 'sonner';
 
 interface Estudiante {
   id: string;
@@ -89,25 +89,26 @@ type SortField = 'nombres' | 'apellidos' | 'cedulaIdentidad' | 'edad' | 'created
 type SortOrder = 'asc' | 'desc';
 
 const INSTRUMENTOS = [
-  { id: 'violin', nombre: 'Violín', color: 'bg-[#E8F5E8]', textColor: 'text-[#4CAF50]' },
-  { id: 'viola', nombre: 'Viola', color: 'bg-[#E3F2FD]', textColor: 'text-[#1976D2]' },
-  { id: 'violonchelo', nombre: 'Violonchelo', color: 'bg-[#FCE4EC]', textColor: 'text-[#C2185B]' },
-  { id: 'contrabajo', nombre: 'Contrabajo', color: 'bg-[#FFF3E0]', textColor: 'text-[#FF9800]' }
+  { id: 'violin', nombre: 'Violín', color: 'bg-[#F3E2CF]', textColor: 'text-[#795C34]' },
+  { id: 'viola', nombre: 'Viola', color: 'bg-[#EEE0D2]', textColor: 'text-[#72513A]' },
+  { id: 'violonchelo', nombre: 'Violonchelo', color: 'bg-[#F4DFD8]', textColor: 'text-[#8F4B39]' },
+  { id: 'contrabajo', nombre: 'Contrabajo', color: 'bg-[#F5E9D1]', textColor: 'text-[#886324]' }
 ];
 
 // Colores para las orquestas (se asignarán dinámicamente)
 const ORQUESTA_COLORS = [
-  { bg: 'bg-[#E8EAF6]', text: 'text-[#3949AB]', border: 'border-[#3949AB]' },
-  { bg: 'bg-[#E0F2F1]', text: 'text-[#00796B]', border: 'border-[#00796B]' },
-  { bg: 'bg-[#FCE4EC]', text: 'text-[#C2185B]', border: 'border-[#C2185B]' },
-  { bg: 'bg-[#FFF3E0]', text: 'text-[#FF9800]', border: 'border-[#FF9800]' },
-  { bg: 'bg-[#E8F5E8]', text: 'text-[#4CAF50]', border: 'border-[#4CAF50]' },
-  { bg: 'bg-[#FFE0E0]', text: 'text-[#D32F2F]', border: 'border-[#D32F2F]' },
-  { bg: 'bg-[#E0E0FF]', text: 'text-[#5E35B1]', border: 'border-[#5E35B1]' },
-  { bg: 'bg-[#FFF9C4]', text: 'text-[#F57F17]', border: 'border-[#F57F17]' },
+  { bg: 'bg-[#E8D5C4]', text: 'text-[#795C34]', border: 'border-[#9A784F]' },
+  { bg: 'bg-[#F3E2CF]', text: 'text-[#72513A]', border: 'border-[#B08A61]' },
+  { bg: 'bg-[#F4DFD8]', text: 'text-[#8F4B39]', border: 'border-[#B87560]' },
+  { bg: 'bg-[#F5E9D1]', text: 'text-[#886324]', border: 'border-[#B99554]' },
+  { bg: 'bg-[#EDE3D7]', text: 'text-[#65350F]', border: 'border-[#9A784F]' },
+  { bg: 'bg-[#E8D9CC]', text: 'text-[#6B4930]', border: 'border-[#A77C5D]' },
+  { bg: 'bg-[#EFE1D1]', text: 'text-[#74543A]', border: 'border-[#A78664]' },
+  { bg: 'bg-[#F2E6D8]', text: 'text-[#795C34]', border: 'border-[#B49370]' },
 ];
 
-const exportToExcel = (estudiantes: Estudiante[]) => {
+const exportToExcel = async (estudiantes: Estudiante[]) => {
+  const XLSX = await import('xlsx');
   const dataToExport = estudiantes.map(estudiante => ({
     'Cédula del Estudiante': estudiante.cedulaIdentidad,
     'Nombres del Estudiante': estudiante.nombres,
@@ -219,8 +220,8 @@ function EstudianteDetailsModal({ estudiante, onClose }: { estudiante: Estudiant
                 </DialogDescription>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
-              ✕
+            <Button variant="ghost" size="sm" aria-label="Cerrar detalles" onClick={onClose} className="text-white hover:bg-white/20">
+              <XCircle className="h-5 w-5" aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -279,8 +280,8 @@ function EstudianteDetailsModal({ estudiante, onClose }: { estudiante: Estudiant
                         </CardHeader>
                         <CardContent className="space-y-2">
                           <p className="text-sm font-medium">{estudiante.representante.nombreApellidoMadre}</p>
-                          <p className="text-sm">📞 {estudiante.representante.telefonoMadre}</p>
-                          <p className="text-sm">📧 {estudiante.representante.correoMadre}</p>
+                          <p className="flex items-center gap-2 text-sm"><Phone className="h-4 w-4 text-[#9A784F]" />{estudiante.representante.telefonoMadre}</p>
+                          <p className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4 text-[#9A784F]" />{estudiante.representante.correoMadre}</p>
                         </CardContent>
                       </Card>
                     )}
@@ -292,8 +293,8 @@ function EstudianteDetailsModal({ estudiante, onClose }: { estudiante: Estudiant
                         </CardHeader>
                         <CardContent className="space-y-2">
                           <p className="text-sm font-medium">{estudiante.representante.nombreApellidoPadre}</p>
-                          <p className="text-sm">📞 {estudiante.representante.telefonoPadre}</p>
-                          <p className="text-sm">📧 {estudiante.representante.correoPadre}</p>
+                          <p className="flex items-center gap-2 text-sm"><Phone className="h-4 w-4 text-[#9A784F]" />{estudiante.representante.telefonoPadre}</p>
+                          <p className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4 text-[#9A784F]" />{estudiante.representante.correoPadre}</p>
                         </CardContent>
                       </Card>
                     )}
@@ -305,8 +306,8 @@ function EstudianteDetailsModal({ estudiante, onClose }: { estudiante: Estudiant
                         </CardHeader>
                         <CardContent className="space-y-2">
                           <p className="text-sm font-medium">{estudiante.representante.nombreApellidoRepresentanteLegal}</p>
-                          <p className="text-sm">📞 {estudiante.representante.telefonoRepresentanteLegal}</p>
-                          <p className="text-sm">📧 {estudiante.representante.correoRepresentanteLegal}</p>
+                          <p className="flex items-center gap-2 text-sm"><Phone className="h-4 w-4 text-[#9A784F]" />{estudiante.representante.telefonoRepresentanteLegal}</p>
+                          <p className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4 text-[#9A784F]" />{estudiante.representante.correoRepresentanteLegal}</p>
                           <p className="text-sm text-[#795C34]">Parentesco: {estudiante.representante.parentescoRepresentanteLegal}</p>
                         </CardContent>
                       </Card>
@@ -408,15 +409,17 @@ function SortableHeader({ field, currentSort, sortOrder, onSort, children }: {
   
   return (
     <TableHead 
-      className="font-bold text-[#362511] py-4 cursor-pointer hover:bg-[#F5F1EB] transition-colors"
-      onClick={() => onSort(field)}
+      aria-sort={isActive ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+      className="p-0 font-bold text-[#362511]"
     >
-      <div className="flex items-center gap-2">
+      <button
+        type="button"
+        className="flex w-full items-center gap-2 px-4 py-4 text-left transition-colors hover:bg-[#F5F1EB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#9A784F]"
+        onClick={() => onSort(field)}
+      >
         {children}
-        {isActive && (
-          sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />
-        )}
-      </div>
+        {isActive && (sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />)}
+      </button>
     </TableHead>
   );
 }
@@ -443,8 +446,9 @@ function EstudiantesPage() {
   const { data: session } = useSession();
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [displayCount, setDisplayCount] = useState(20);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   const [selectedEstudiante, setSelectedEstudiante] = useState<Estudiante | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -458,7 +462,9 @@ function EstudiantesPage() {
     tieneRepresentante: ''
   });
 
-  const fetchEstudiantes = async () => {
+  const fetchEstudiantes = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
     try {
       const response = await fetch('/api/estudiantes', {
         headers: {
@@ -467,28 +473,32 @@ function EstudiantesPage() {
         }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setEstudiantes(data);
+      if (!response.ok) {
+        throw new Error(`No se pudo cargar la lista de estudiantes (${response.status}).`);
       }
+
+      const data: unknown = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('El servidor devolvió un formato de estudiantes no válido.');
+      }
+
+      setEstudiantes(data);
     } catch (error) {
-      console.error('Error:', error);
+      const message = error instanceof Error ? error.message : 'Error desconocido al cargar estudiantes.';
+      console.error('Error al cargar estudiantes:', error);
+      setLoadError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user?.rol]);
 
   useEffect(() => {
-    fetchEstudiantes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void fetchEstudiantes();
+  }, [fetchEstudiantes]);
 
   const handleLoadMore = () => {
-    setLoadingMore(true);
-    setTimeout(() => {
-      setDisplayCount(prev => prev + 20);
-      setLoadingMore(false);
-    }, 500);
+    setDisplayCount(prev => prev + 20);
   };
 
   // Obtener lista única de orquestas desde los estudiantes
@@ -503,30 +513,37 @@ function EstudiantesPage() {
   }, [estudiantes]);
 
   const estudiantesPorInstrumento = useMemo(() => {
-    const counts: { [key: string]: number } = {};
-    INSTRUMENTOS.forEach(instrumento => {
-      counts[instrumento.id] = estudiantes.filter(estudiante => 
-        estudiante.instrumentoPrincipal?.toLowerCase().includes(instrumento.nombre.toLowerCase())
-      ).length;
+    const counts: Record<string, number> = Object.fromEntries(
+      INSTRUMENTOS.map(({ id }) => [id, 0])
+    );
+    estudiantes.forEach(({ instrumentoPrincipal }) => {
+      const instrumento = INSTRUMENTOS.find(({ nombre }) =>
+        instrumentoPrincipal?.toLowerCase().includes(nombre.toLowerCase())
+      );
+      if (instrumento) counts[instrumento.id] += 1;
     });
     return counts;
   }, [estudiantes]);
 
   const estudiantesPorOrquesta = useMemo(() => {
-    const counts: { [key: string]: number } = {};
-    orquestasUnicas.forEach(orquesta => {
-      counts[orquesta] = estudiantes.filter(estudiante => 
-        estudiante.agrupacionPertenece === orquesta
-      ).length;
+    const counts: Record<string, number> = {};
+    estudiantes.forEach(({ agrupacionPertenece }) => {
+      if (agrupacionPertenece) {
+        counts[agrupacionPertenece] = (counts[agrupacionPertenece] || 0) + 1;
+      }
     });
     return counts;
-  }, [estudiantes, orquestasUnicas]);
+  }, [estudiantes]);
 
   const filteredAndSortedEstudiantes = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
     let filtered = estudiantes.filter(estudiante =>
-      estudiante.nombres.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      estudiante.apellidos.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      estudiante.cedulaIdentidad.includes(searchTerm)
+      estudiante.nombres.toLowerCase().includes(normalizedSearch) ||
+      estudiante.apellidos.toLowerCase().includes(normalizedSearch) ||
+      estudiante.cedulaIdentidad.includes(searchTerm.trim()) ||
+      estudiante.representante?.nombreApellidoMadre?.toLowerCase().includes(normalizedSearch) ||
+      estudiante.representante?.nombreApellidoPadre?.toLowerCase().includes(normalizedSearch) ||
+      estudiante.representante?.nombreApellidoRepresentanteLegal?.toLowerCase().includes(normalizedSearch)
     );
 
     // Filtrar por instrumento
@@ -548,12 +565,13 @@ function EstudiantesPage() {
 
     // Resto de filtros
     if (filters.sexo) filtered = filtered.filter(e => e.sexo === filters.sexo);
-    if (filters.agrupacion) filtered = filtered.filter(e => e.agrupacionPertenece.toLowerCase().includes(filters.agrupacion.toLowerCase()));
+    if (filters.agrupacion) filtered = filtered.filter(e => e.agrupacionPertenece?.toLowerCase().includes(filters.agrupacion.toLowerCase()));
     if (filters.tieneRepresentante) filtered = filtered.filter(e => filters.tieneRepresentante === 'si' ? e.representanteId : !e.representanteId);
 
     // Ordenamiento
     filtered.sort((a, b) => {
-      let aVal, bVal;
+      let aVal: string | number;
+      let bVal: string | number;
       switch (sortField) {
         case 'nombres': aVal = a.nombres; bVal = b.nombres; break;
         case 'apellidos': aVal = a.apellidos; bVal = b.apellidos; break;
@@ -571,6 +589,19 @@ function EstudiantesPage() {
 
     return filtered;
   }, [estudiantes, searchTerm, filters, sortField, sortOrder, selectedInstrumento, selectedOrquesta]);
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      await exportToExcel(filteredAndSortedEstudiantes);
+      toast.success('El archivo de estudiantes se descargó correctamente.');
+    } catch (error) {
+      console.error('Error al exportar estudiantes:', error);
+      toast.error('No se pudo generar el archivo de Excel.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const displayedEstudiantes = filteredAndSortedEstudiantes.slice(0, displayCount);
   const hasMoreStudents = displayCount < filteredAndSortedEstudiantes.length;
@@ -650,13 +681,22 @@ function EstudiantesPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => exportToExcel(filteredAndSortedEstudiantes)}>
-                    <TableIcon className="w-4 h-4 mr-2" />
-                    Exportar Datos Completos
+                  <DropdownMenuItem disabled={isExporting} onClick={() => void handleExport()}>
+                    {isExporting ? <LoaderCircle className="w-4 h-4 mr-2 animate-spin" /> : <TableIcon className="w-4 h-4 mr-2" />}
+                    {isExporting ? 'Generando archivo...' : 'Exportar Datos Completos'}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+
+            {loadError && (
+              <div role="alert" className="mb-6 flex flex-col gap-3 rounded-xl border border-red-300/70 bg-red-50/75 p-4 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between">
+                <span>{loadError}</span>
+                <Button type="button" variant="outline" onClick={() => void fetchEstudiantes()}>
+                  Reintentar
+                </Button>
+              </div>
+            )}
 
             {/* Filtro de Instrumentos */}
             {INSTRUMENTOS.some(inst => estudiantesPorInstrumento[inst.id] > 0) && (
@@ -816,8 +856,8 @@ function EstudiantesPage() {
             </div>
 
             {/* Tabla de estudiantes */}
-            <div className="rounded-lg border border-[#E8D5C4] bg-white overflow-hidden">
-              <Table>
+            <div className="overflow-x-auto rounded-xl border border-[#E8D5C4] bg-white/70">
+              <Table className="min-w-[1100px]">
                 <TableHeader>
                   <TableRow className="bg-gradient-to-r from-[#F5F1EB] to-[#F8F4EF]">
                     <SortableHeader field="cedulaIdentidad" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>
@@ -848,7 +888,13 @@ function EstudiantesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {displayedEstudiantes.map((estudiante) => (
+                  {displayedEstudiantes.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={11} className="h-28 text-center text-[#795C34]">
+                        {estudiantes.length === 0 ? 'Aún no hay estudiantes registrados.' : 'No hay estudiantes que coincidan con los filtros.'}
+                      </TableCell>
+                    </TableRow>
+                  ) : displayedEstudiantes.map((estudiante) => (
                     <TableRow key={estudiante.id} className="hover:bg-[#F5F1EB]/30">
                       <TableCell className="font-medium">{estudiante.cedulaIdentidad}</TableCell>
                       <TableCell>{estudiante.nombres}</TableCell>
@@ -894,9 +940,9 @@ function EstudiantesPage() {
             {/* Botón de cargar más */}
             {hasMoreStudents && (
               <div className="flex justify-center mt-6">
-                <Button onClick={handleLoadMore} disabled={loadingMore} className="bg-[#9A784F] hover:bg-[#795C34] text-white">
-                  {loadingMore ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Users className="w-4 h-4 mr-2" />}
-                  {loadingMore ? 'Cargando...' : 'Ver más estudiantes'}
+                <Button onClick={handleLoadMore} className="bg-[#9A784F] hover:bg-[#795C34] text-white">
+                  <Users className="w-4 h-4 mr-2" />
+                  Ver más estudiantes
                 </Button>
               </div>
             )}

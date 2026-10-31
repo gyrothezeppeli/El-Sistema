@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Music, History, UserPlus, Star, User, ArrowRight, X, Table, LogOut, Menu } from 'lucide-react';
+import { Music, History, UserPlus, Star, User, ArrowRight, X, Table, LogOut, Menu, Info } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 // Componente interno que usa useSession
@@ -214,7 +214,7 @@ function HomeContent() {
                 className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-[#9A784F] bg-white"
                 onClick={() => {
                   setShowRegistrationModal(false);
-                  window.location.href = '/inscripcion_alumno';
+                  router.push('/inscripcion_alumno');
                 }}
               >
                 <CardHeader className="text-center">
@@ -252,9 +252,7 @@ function HomeContent() {
             {/* Información adicional */}
             <div className="bg-[#F8F4F0] border border-[#E8D5C4] rounded-lg p-4 mt-6">
               <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-[#795C34] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <Info className="mt-0.5 h-5 w-5 shrink-0 text-[#795C34]" aria-hidden="true" />
                 <div>
                   <h4 className="font-bold text-[#362511] mb-1">Proceso de Inscripción Completo</h4>
                   <p className="text-[#65350F] text-sm">

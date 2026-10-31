@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Save, User, Music, School, Heart, Users, Search, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 // ============================================
 // TIPOS Y DATOS DE VENEZUELA
@@ -527,6 +528,36 @@ interface FormData {
 // COMPONENTES PERSONALIZADOS
 // ============================================
 
+const agrupacionesMusicales = [
+  "Iniciación Musical", "Coro Infantil", "Coro Juvenil Eduardo Plaza", "Coro Adulto",
+  "Programa Educación Especial (P.E.E)", "Orquesta Afrovenzolana Infantil",
+  "Orquesta Afrovenezolana Regional Otilio Galíndez", "Orquesta Alma Llanera Infantil",
+  "Orquesta Alma Llanera Regional Cristóbal Jiménez", "Orquesta Sinfónica Beethoven",
+  "Orquesta Sinfónica Infantil", "Orquesta Sinfónica Regional Juvenil Juan Bautista Plaza",
+  "Danza", "Piano", "Orquesta Latino Caribeña"
+];
+
+const gradosEscolares = [
+  "1er Grado", "2do Grado", "3er Grado", "4to Grado", "5to Grado", "6to Grado",
+  "1er Año", "2do Año", "3er Año", "4to Año", "5to Año"
+];
+
+const instrumentosMusicales = ["Violín", "Viola", "Violonchelo", "Contrabajo"];
+
+const nucleosLista = [
+  "Baruta", "BCV", "Cantv-Ccs", "Caricuao", "Carmelitas",
+  "Centro académico regional 23 de enero", "Centro académico regional La Rinconada",
+  "Centro académico regional Los Chorros", "Centro académico regional Montalbán",
+  "Centro académico regional San Agustín", "Centro de formación coral inocente Carreño",
+  "Chacao libertador", "Chapellín", "CICPC", "Ciudad caribia", "Colonia Tovar",
+  "Comandancia G.N", "Convenio Vicepresidencia", "Corpoelec", "Cultura Chacao",
+  "el Hatillo", "Entidad de atención Dr. José Gregorio Hernández", "Fuerte Tiuna",
+  "Galipán", "gran Colombia", "junín", "junco", "la Carlota", "la Ceiba", "la Hoyada",
+  "la pastora", "La Vega", "lince", "los rosales", "Miraflores", "petare",
+  "quebrada Honda", "quinta Marilina", "Ruiz Pineda", "Santa Cruz del este",
+  "Santa Rosa", "Sarría", "seniat", "Soublette chacao", "TSJ", "universidad Santa Rosa"
+];
+
 // Componente de carga
 function LoadingFallback() {
   return (
@@ -614,7 +645,7 @@ export default function RegistroPage() {
         setFormData(prev => ({ ...prev, edad: nuevaEdad }));
       }
     }
-  }, [formData.fechaNacimiento, calcularEdad]);
+  }, [formData.fechaNacimiento, formData.edad, calcularEdad]);
 
   // Efectos para dependencias
   useEffect(() => {
@@ -714,7 +745,7 @@ export default function RegistroPage() {
     setFormData(prev => ({ ...prev, instrumentosSecundarios: nuevosInstrumentos.join(', ') }));
   };
 
-  const validateForm = (): boolean => {
+  const validateForm = (): string | null => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.nombres.trim()) newErrors.nombres = 'Los nombres son obligatorios';
@@ -794,105 +825,79 @@ export default function RegistroPage() {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors)[0] ?? null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    if (validateForm()) {
-      try {
-        const datosParaEnviar = {
-          ...formData,
-          instrumentoPrincipal: formData.instrumentoPrincipal || "",
-          instrumentosSecundarios: instrumentosSecundariosSeleccionados.join(', ') || "",
-          enfermedadesPadece: [...enfermedadesSeleccionadas, ...(formData.otrasEnfermedades ? [`otras: ${formData.otrasEnfermedades}`] : [])].join(', '),
-          numeroTelefonoLocal: formData.numeroTelefonoLocal || "",
-          nombreAgrupacionesPertenecio: formData.nombreAgrupacionesPertenecio || "",
-          otrasEnfermedades: formData.otrasEnfermedades || "",
-          especifiqueCondicion: formData.especifiqueCondicion || "",
-          especifiqueNecesidades: formData.especifiqueNecesidades || "",
-          especifiqueAlergia: formData.especifiqueAlergia || "",
-          numeroDosisVacuna: formData.numeroDosisVacuna || "",
-          sexo: formData.sexo,
-          nombreColegio: formData.nombreColegio || "",
-          gradoCursa: formData.gradoCursa || ""
-        };
+    if (isSubmitting) return;
 
-        const response = await fetch('/api/estudiantes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(datosParaEnviar),
-        });
-
-        const responseData = await response.json();
-
-        if (!response.ok) {
-          throw new Error(responseData.error || 'Error en el servidor');
-        }
-
-        let estudianteId: string | undefined;
-        if (responseData.estudiante?.id) estudianteId = responseData.estudiante.id;
-        else if (responseData.id) estudianteId = responseData.id;
-
-        if (!estudianteId) throw new Error('La respuesta del servidor no contiene el ID del estudiante');
-
-        localStorage.setItem('ultimoEstudianteId', estudianteId);
-        alert('✅ Registro de estudiante completado exitosamente. Ahora complete los datos de los representantes.');
-        router.push(`/inscripcion_representantes?estudianteId=${estudianteId}`);
-        
-      } catch (error) {
-        console.error('Error:', error);
-        alert(error instanceof Error ? error.message : 'Hubo un error al procesar el registro');
-      }
-    } else {
-      const firstErrorField = Object.keys(errors)[0];
-      const element = document.getElementById(firstErrorField);
-      if (element) element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const firstErrorField = validateForm();
+    if (firstErrorField) {
+      document.getElementById(firstErrorField)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast.error('Revisa los campos marcados antes de continuar.');
+      return;
     }
-    
-    setIsSubmitting(false);
+
+    setIsSubmitting(true);
+    try {
+      const datosParaEnviar = {
+        ...formData,
+        instrumentoPrincipal: formData.instrumentoPrincipal || "",
+        instrumentosSecundarios: instrumentosSecundariosSeleccionados.join(', ') || "",
+        enfermedadesPadece: [...enfermedadesSeleccionadas, ...(formData.otrasEnfermedades ? [`otras: ${formData.otrasEnfermedades}`] : [])].join(', '),
+        numeroTelefonoLocal: formData.numeroTelefonoLocal || "",
+        nombreAgrupacionesPertenecio: formData.nombreAgrupacionesPertenecio || "",
+        otrasEnfermedades: formData.otrasEnfermedades || "",
+        especifiqueCondicion: formData.especifiqueCondicion || "",
+        especifiqueNecesidades: formData.especifiqueNecesidades || "",
+        especifiqueAlergia: formData.especifiqueAlergia || "",
+        numeroDosisVacuna: formData.numeroDosisVacuna || "",
+        sexo: formData.sexo,
+        nombreColegio: formData.nombreColegio || "",
+        gradoCursa: formData.gradoCursa || ""
+      };
+
+      const response = await fetch('/api/estudiantes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datosParaEnviar),
+      });
+
+      const responseData = await response.json();
+      if (!response.ok) {
+        throw new Error(responseData.error || 'Error en el servidor');
+      }
+
+      const estudianteId: string | undefined = responseData.estudiante?.id ?? responseData.id;
+      if (!estudianteId) {
+        throw new Error('La respuesta del servidor no contiene el ID del estudiante');
+      }
+
+      localStorage.setItem('ultimoEstudianteId', estudianteId);
+      toast.success('Estudiante registrado. Completa ahora los datos de sus representantes.');
+      router.push(`/inscripcion_representantes?estudianteId=${estudianteId}`);
+    } catch (error) {
+      console.error('Error al registrar estudiante:', error);
+      toast.error(error instanceof Error ? error.message : 'Hubo un error al procesar el registro');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: currentYear - 1990 + 1 }, (_, i) => (currentYear - i).toString());
-
-  const agrupacionesMusicales = [
-    "Iniciación Musical", "Coro Infantil", "Coro Juvenil Eduardo Plaza", "Coro Adulto",
-    "Programa Educación Especial (P.E.E)", "Orquesta Afrovenzolana Infantil",
-    "Orquesta Afrovenezolana Regional Otilio Galíndez", "Orquesta Alma Llanera Infantil",
-    "Orquesta Alma Llanera Regional Cristóbal Jiménez", "Orquesta Sinfónica Beethoven",
-    "Orquesta Sinfónica Infantil", "Orquesta Sinfónica Regional Juvenil Juan Bautista Plaza",
-    "Danza", "Piano", "Orquesta Latino Caribeña"
-  ];
-
-  const gradosEscolares = [
-    "1er Grado", "2do Grado", "3er Grado", "4to Grado", "5to Grado", "6to Grado",
-    "1er Año", "2do Año", "3er Año", "4to Año", "5to Año"
-  ];
-
-  const instrumentosMusicales = ["Violín", "Viola", "Violonchelo", "Contrabajo"];
-
-  const nucleosLista = [
-    "Baruta", "BCV", "Cantv-Ccs", "Caricuao", "Carmelitas", 
-    "Centro académico regional 23 de enero", "Centro académico regional La Rinconada", 
-    "Centro académico regional Los Chorros", "Centro académico regional Montalbán", 
-    "Centro académico regional San Agustín", "Centro de formación coral inocente Carreño", 
-    "Chacao libertador", "Chapellín", "CICPC", "Ciudad caribia", "Colonia Tovar", 
-    "Comandancia G.N", "Convenio Vicepresidencia", "Corpoelec", "Cultura Chacao", 
-    "el Hatillo", "Entidad de atención Dr. José Gregorio Hernández", "Fuerte Tiuna", 
-    "Galipán", "gran Colombia", "junín", "junco", "la Carlota", "la Ceiba", "la Hoyada", 
-    "la pastora", "La Vega", "lince", "los rosales", "Miraflores", "petare", 
-    "quebrada Honda", "quinta Marilina", "Ruiz Pineda", "Santa Cruz del este", 
-    "Santa Rosa", "Sarría", "seniat", "Soublette chacao", "TSJ", "universidad Santa Rosa"
-  ];
+  const years = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return Array.from({ length: currentYear - 1990 + 1 }, (_, i) => (currentYear - i).toString());
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const nucleosFiltrados = nucleosLista.filter(nucleo =>
-    nucleo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const nucleosFiltrados = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLocaleLowerCase('es');
+    return nucleosLista.filter(nucleo =>
+      nucleo.toLocaleLowerCase('es').includes(normalizedSearch)
+    );
+  }, [searchTerm]);
 
   if (!mounted) {
     return <LoadingFallback />;

@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, User, Users } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Info, Save, User, Users } from 'lucide-react';
 import { Suspense } from 'react';
+import { toast } from 'sonner';
 
 const gradosInstruccion = [
   "Primaria",
@@ -133,6 +134,28 @@ function RegistroRepresentantesContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Obtener el ID del estudiante de la URL o localStorage
+  const cargarInformacionEstudiante = useCallback(async (id: string) => {
+    try {
+      const response = await fetch(`/api/estudiantes/${id}`, {
+        headers: {
+          'Authorization': 'admin',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'No se pudo cargar la información del estudiante.');
+      }
+
+      setEstudianteInfo(await response.json());
+    } catch (error) {
+      console.error('Error al cargar información del estudiante:', error);
+      toast.error(error instanceof Error ? error.message : 'Error de conexión al cargar el estudiante.');
+    } finally {
+      setLoadingEstudiante(false);
+    }
+  }, []);
+
   useEffect(() => {
     const id = searchParams.get('estudianteId');
     if (id) {
@@ -147,39 +170,11 @@ function RegistroRepresentantesContent() {
         cargarInformacionEstudiante(savedId);
       } else {
         setLoadingEstudiante(false);
-        // Si no hay estudiante ID, redirigir al formulario de estudiantes
-        alert('No se encontró información del estudiante. Será redirigido al registro de estudiantes.');
+        toast.error('No se encontró información del estudiante. Serás redirigido al registro.');
         router.push('/inscripcion_alumno');
       }
     }
-  }, [searchParams, router]);
-
-  const cargarInformacionEstudiante = async (id: string) => {
-    try {
-      console.log('🔍 Cargando información del estudiante:', id);
-      
-      const response = await fetch(`/api/estudiantes/${id}`, {
-        headers: {
-          'Authorization': 'admin', // 🔐 HEADER DE AUTORIZACIÓN
-        },
-      });
-      
-      if (response.ok) {
-        const estudiante = await response.json();
-        setEstudianteInfo(estudiante);
-        console.log('✅ Información del estudiante cargada:', estudiante);
-      } else {
-        const errorData = await response.json();
-        console.error('❌ Error al cargar información del estudiante:', errorData);
-        alert('Error al cargar información del estudiante. Por favor, regrese al formulario anterior.');
-      }
-    } catch (error) {
-      console.error('❌ Error:', error);
-      alert('Error de conexión al cargar información del estudiante.');
-    } finally {
-      setLoadingEstudiante(false);
-    }
-  };
+  }, [cargarInformacionEstudiante, router, searchParams]);
 
   // Función simple para manejar cambios de texto
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -216,7 +211,7 @@ function RegistroRepresentantesContent() {
     }
   };
 
-  const validateForm = () => {
+  const validateForm = (): string | null => {
     const newErrors: Record<string, string> = {};
 
     // Validar que al menos un representante esté completo
@@ -287,115 +282,76 @@ function RegistroRepresentantesContent() {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors)[0] ?? null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    console.log('🔐 Iniciando envío del formulario de representantes...');
-    
-    if (validateForm()) {
-      try {
-        console.log('📦 Datos de representantes a enviar:', formData);
+    if (isSubmitting) return;
 
-        // 1. Crear el representante
-        console.log('🚀 Enviando solicitud a /api/representantes');
-        const response = await fetch('/api/representantes', {
-          method: 'POST',
+    const firstErrorField = validateForm();
+    if (firstErrorField) {
+      const field = document.getElementById(firstErrorField);
+      (field ?? document.querySelector('.text-red-500'))?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+      toast.error('Revisa los campos marcados antes de continuar.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/representantes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'admin',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      const representanteCreado = await response.json();
+      if (!representanteCreado.id) {
+        throw new Error('La respuesta del servidor no contiene el ID del representante.');
+      }
+
+      if (estudianteId) {
+        const updateResponse = await fetch(`/api/estudiantes/${estudianteId}`, {
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'admin', // 🔐 HEADER DE AUTORIZACIÓN
+            'Authorization': 'admin',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({ representanteId: representanteCreado.id }),
         });
 
-        console.log('📨 Respuesta de representantes:', {
-          status: response.status,
-          ok: response.ok
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('❌ Error response:', errorData);
-          throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
-        }
-
-        const representanteCreado = await response.json();
-        console.log('✅ Representante creado:', representanteCreado);
-
-        // 2. Si tenemos estudianteId, actualizar el estudiante con el representanteId
-        if (estudianteId && representanteCreado.id) {
-          console.log('🔄 Actualizando estudiante con representanteId...');
-          
-          const updateResponse = await fetch(`/api/estudiantes/${estudianteId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'admin', // 🔐 HEADER DE AUTORIZACIÓN
-            },
-            body: JSON.stringify({
-              representanteId: representanteCreado.id
-            }),
-          });
-
-          console.log('📨 Respuesta de actualización:', {
-            status: updateResponse.status,
-            ok: updateResponse.ok
-          });
-
-          if (!updateResponse.ok) {
-            const errorData = await updateResponse.json();
-            throw new Error(errorData.error || 'Error al actualizar estudiante con representante');
-          }
-
-          const estudianteActualizado = await updateResponse.json();
-          console.log('✅ Estudiante actualizado con representanteId:', estudianteActualizado);
-        }
-
-        alert('✅ ¡Registro completado exitosamente! El estudiante y sus representantes han sido registrados en el sistema.');
-        
-        // Limpiar localStorage
-        localStorage.removeItem('ultimoEstudianteId');
-        
-        router.push('/inicio');
-        
-      } catch (error) {
-        console.error('❌ Error al procesar el formulario:', error);
-        
-        // Mensaje de error más específico
-        let errorMessage = 'Hubo un error al procesar el registro.';
-        if (error instanceof Error) {
-          if (error.message.includes('403')) {
-            errorMessage = '❌ Error de acceso: No tiene permisos para crear representantes. Contacte al administrador.';
-          } else if (error.message.includes('400')) {
-            errorMessage = '❌ Error en los datos: ' + error.message;
-          } else if (error.message.includes('500')) {
-            errorMessage = '❌ Error del servidor: Problema con la base de datos. Contacte al administrador.';
-          } else {
-            errorMessage = '❌ ' + error.message;
-          }
-        }
-        
-        alert(errorMessage);
-      }
-    } else {
-      console.log('❌ El formulario tiene errores:', errors);
-      const firstErrorField = Object.keys(errors)[0];
-      const element = document.getElementById(firstErrorField);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else {
-        // Si no encuentra el elemento, hacer scroll al primer error visible
-        const firstErrorElement = document.querySelector('.text-red-500');
-        if (firstErrorElement) {
-          firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (!updateResponse.ok) {
+          const errorData = await updateResponse.json();
+          throw new Error(errorData.error || 'Error al asociar el representante con el estudiante.');
         }
       }
+
+      localStorage.removeItem('ultimoEstudianteId');
+      toast.success('Registro completado. El estudiante y sus representantes ya están registrados.');
+      router.push('/inicio');
+    } catch (error) {
+      console.error('Error al procesar el formulario de representantes:', error);
+      let errorMessage = error instanceof Error ? error.message : 'Hubo un error al procesar el registro.';
+      if (errorMessage.includes('403')) {
+        errorMessage = 'No tienes permisos para crear representantes. Contacta al administrador.';
+      } else if (errorMessage.includes('500')) {
+        errorMessage = 'Error del servidor al guardar el registro. Contacta al administrador.';
+      }
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   const handleBackToStudents = () => {
@@ -445,9 +401,7 @@ function RegistroRepresentantesContent() {
           <div className="flex items-center">
             <div className="flex flex-col items-center">
               <div className="w-12 h-12 rounded-full bg-[#795C34] text-white flex items-center justify-center font-semibold">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+                <CheckCircle2 className="w-5 h-5" aria-hidden="true" />
               </div>
               <span className="text-sm mt-2 text-[#5E2C04]">Estudiante</span>
             </div>
@@ -495,9 +449,7 @@ function RegistroRepresentantesContent() {
             {/* Información del progreso */}
             <div className="bg-gradient-to-r from-[#E8F5E8] to-[#D4E8D4] border border-[#B8D4B8] rounded-lg p-4 mb-6">
               <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-[#2E7D32] mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <CheckCircle2 className="w-5 h-5 text-[#795C34] mt-0.5" aria-hidden="true" />
                 <div>
                   <h4 className="font-semibold text-[#1B5E20]">Paso 1 Completado</h4>
                   <p className="text-[#2E7D32] text-sm mt-1">
@@ -1023,9 +975,7 @@ function RegistroRepresentantesContent() {
               {/* Información de finalización */}
               <div className="bg-gradient-to-r from-[#F5F1EB] to-[#E8DFD1] border border-[#D9C7A8] rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#795C34] mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  <Info className="w-5 h-5 text-[#795C34] mt-0.5" aria-hidden="true" />
                   <div>
                     <h4 className="font-semibold text-[#5E2C04]">Finalización del Registro</h4>
                     <p className="text-[#65350F] text-sm mt-1">
