@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Save, User, Music, School, Heart, Users, Search, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { DashboardLayout } from '@/components/DashboardLayout';
 
 interface Municipio {
   nombre: string;
