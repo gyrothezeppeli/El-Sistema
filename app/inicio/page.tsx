@@ -1,5 +1,4 @@
-'use client'; // Necesario para usar useSession y signOut
-
+// app/inicio/page.tsx
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
@@ -16,7 +15,7 @@ import {
 import Link from 'next/link'
 import { toast } from 'sonner'
 
-export default function DashboardPage() {
+export default function InicioPage() {
   const { data: session } = useSession()
   const router = useRouter()
   
@@ -29,7 +28,7 @@ export default function DashboardPage() {
       toast.success('Sesión cerrada exitosamente')
       router.push('/')
       router.refresh()
-    } catch (error) {
+    } catch (err) { // <-- 1. Corregido: cambiamos 'error' por 'err' (o lo quitamos)
       toast.error('Error al cerrar sesión')
     }
   }
@@ -85,7 +84,7 @@ export default function DashboardPage() {
           {/* MÓDULOS PRINCIPALES */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             
-            {/* Módulo 1: Partituras (Destacado y Principal para alumnos) */}
+            {/* Módulo 1: Partituras */}
             <Link href="/partituras" className="group md:col-span-2 lg:col-span-1">
               <Card className="h-full bg-primary text-primary-foreground shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 rounded-[2rem] overflow-hidden relative border border-primary/50">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
@@ -149,7 +148,6 @@ export default function DashboardPage() {
 
           {/* SECCIÓN DE HISTORIA */}
           <div className="bg-white/20 backdrop-blur-lg border border-white/40 rounded-[2.5rem] p-8 md:p-12 shadow-sm relative overflow-hidden">
-             {/* Adorno de fondo */}
              <div className="absolute -bottom-10 -right-10 opacity-5 pointer-events-none">
                 <Music className="w-64 h-64" />
              </div>
@@ -167,7 +165,7 @@ export default function DashboardPage() {
               
               <p className="text-foreground/80 text-lg leading-relaxed font-medium">
                 El Sistema Nacional de Orquestas y Coros Juveniles e Infantiles de Venezuela, 
-                conocido mundialmente como <strong className="text-foreground">'El Sistema'</strong>, es un programa de educación musical fundado 
+                conocido mundialmente como <strong className="text-foreground">&quot;El Sistema&quot;</strong>, es un programa de educación musical fundado 
                 en 1975 por el maestro y músico venezolano José Antonio Abreu.
               </p>
               
@@ -178,7 +176,7 @@ export default function DashboardPage() {
               </p>
 
               <blockquote className="italic border-l-4 border-primary pl-6 my-8 text-foreground text-left bg-white/30 p-6 rounded-r-2xl shadow-sm">
-                'La música es un instrumento irremplazable para unir a las personas y expresar los sentimientos más profundos del alma humana.'
+                &quot;La música es un instrumento irremplazable para unir a las personas y expresar los sentimientos más profundos del alma humana.&quot;
                 <footer className="mt-3 text-primary text-sm not-italic font-bold uppercase tracking-widest">— José Antonio Abreu</footer>
               </blockquote>
 
