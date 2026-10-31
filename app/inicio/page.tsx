@@ -1,472 +1,280 @@
-// app/page.tsx
-'use client';
+// app/dashboard/page.tsx
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { 
+  ChevronDown, 
+  UserPlus, 
+  Mail, 
+  Music,
+  CalendarDays,
+  Award,
+  Users,
+  Briefcase,
+  ArrowDownRight,
+  Search
+} from 'lucide-react'
+import Link from 'next/link'
 
-import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Music, History, UserPlus, Star, User, ArrowRight, X, Table, LogOut, Menu, Info } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-
-// Componente interno que usa useSession
-function HomeContent() {
-  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const router = useRouter();
-  const { data: session, status } = useSession();
-  
-  // Determinar si el usuario es administrador
-  const isAdmin = session?.user?.rol === 'administrador';
-
-  const handleLogout = async () => {
-    try {
-      setIsLoggingOut(true);
-      await signOut({ 
-        redirect: false
-      });
-      toast.success('Sesión cerrada exitosamente');
-      router.push('/');
-      router.refresh();
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-      toast.error('Error al cerrar sesión');
-    } finally {
-      setIsLoggingOut(false);
-    }
+// Componente para las etiquetas estilo "Pill"
+const Tag = ({ children, variant = 'glass' }: { children: React.ReactNode, variant?: 'glass' | 'primary' | 'dark' }) => {
+  const base = "px-3 py-1.5 text-[11px] font-bold rounded-full border transition-all backdrop-blur-md";
+  const variants = {
+    glass: "bg-black/5 text-foreground border-white/40 hover:bg-black/10",
+    primary: "bg-primary text-primary-foreground border-primary/50 shadow-[0_0_15px_rgba(208,98,36,0.4)]",
+    dark: "bg-black/80 text-white border-white/20 hover:bg-black",
   };
+  return <span className={`${base} ${variants[variant]}`}>{children}</span>;
+};
 
-  // Navegación móvil
-  const MobileNavigation = () => (
-    <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden text-white">
-          <Menu className="w-5 h-5" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-[280px] bg-[#362511] border-l-[#795C34]">
-        <div className="flex flex-col gap-3 mt-8">
-          <Link href="/inicio/instrumentos" onClick={() => setIsMobileMenuOpen(false)}>
-            <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-[#795C34]">
-              <Music className="w-4 h-4" />
-              Instrumentos
-            </Button>
-          </Link>
-          
-          <Link href="#historia" onClick={() => setIsMobileMenuOpen(false)}>
-            <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-[#795C34]">
-              <History className="w-4 h-4" />
-              Historia
-            </Button>
-          </Link>
-
-          {isAdmin && (
-            <Link href="/tabla" onClick={() => setIsMobileMenuOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-[#795C34]">
-                <Table className="w-4 h-4" />
-                Tabla Estudiantes
-              </Button>
-            </Link>
-          )}
-
-          <Button 
-            onClick={() => {
-              setShowRegistrationModal(true);
-              setIsMobileMenuOpen(false);
-            }}
-            className="w-full justify-start gap-2 bg-[#9A784F] hover:bg-[#795C34] text-white"
-          >
-            <UserPlus className="w-4 h-4" />
-            Inscripción
-          </Button>
-
-          <Button 
-            variant="ghost" 
-            onClick={() => {
-              handleLogout();
-              setIsMobileMenuOpen(false);
-            }}
-            disabled={isLoggingOut}
-            className="w-full justify-start gap-2 bg-red-600 hover:bg-red-700 text-white"
-          >
-            <LogOut className="w-4 h-4" />
-            {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
-          </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-
-  // Si está cargando la sesión, mostrar un indicador
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#F8F4F0] via-[#E8D5C4] to-[#D4B8A4] flex items-center justify-center">
-        <div className="text-center px-4">
-          <div className="w-10 h-10 border-4 border-[#795C34] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-[#362511] text-base">Cargando...</p>
-        </div>
-      </div>
-    );
-  }
-
+export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F8F4F0] via-[#E8D5C4] to-[#D4B8A4]">
-      {/* Navigation Header */}
-      <nav className="bg-[#362511] border-b border-[#795C34] sticky top-0 z-50 shadow-lg">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-6">
-              <Link href="/inicio/instrumentos">
-                <Button variant="ghost" className="text-white hover:bg-[#795C34]">
-                  <Music className="w-4 h-4 mr-2" />
-                  Instrumentos
-                </Button>
-              </Link>
+    <div className="min-h-screen p-4 md:p-8 font-montserrat">
+      
+      {/* Contenedor principal con efecto Liquid Glass */}
+      <div className="max-w-[1200px] mx-auto bg-white/10 backdrop-blur-2xl border border-white/30 rounded-[2.5rem] shadow-[0_20px_60px_rgba(91,43,23,0.15),inset_0_1px_0_rgba(255,255,255,0.6)] overflow-hidden relative">
+        
+        {/* Brillo sutil de fondo */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/20 blur-[100px] rounded-full pointer-events-none"></div>
+
+        {/* HEADER SUPERIOR */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-black/10 bg-white/20 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-foreground text-background flex items-center justify-center font-bold text-sm">
+              F
+            </div>
+            <h1 className="text-sm md:text-base font-bold text-foreground">Fundación Musical Latina</h1>
+          </div>
+          <div className="flex items-center gap-4 text-xs font-bold text-foreground/70">
+            <span className="hidden md:block uppercase tracking-wider">Panel de Gestión</span>
+            <Search className="w-4 h-4 cursor-pointer hover:text-primary transition-colors" />
+          </div>
+        </div>
+
+        {/* SECCIÓN 1: HERO Y ETIQUETAS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 border-b border-black/10">
+          <div className="p-8 flex flex-col justify-end items-start border-r border-black/10 bg-white/5">
+            <ArrowDownRight className="w-16 h-16 text-foreground mb-6 opacity-80" strokeWidth={1.5} />
+            <div className="flex flex-wrap gap-2">
+              <Tag variant="glass">#Gestión</Tag>
+              <Tag variant="glass">#Alumnos</Tag>
+              <Tag variant="glass">#Partituras</Tag>
+              <Tag variant="glass">#Eventos</Tag>
+              <Tag variant="glass">#Música</Tag>
+            </div>
+          </div>
+
+          <div className="md:col-span-2 p-6">
+            <div className="w-full h-full min-h-[250px] bg-primary rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden shadow-inner border border-primary/50 group">
+              <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-10 mix-blend-overlay"></div>
               
-              <Link href="#historia">
-                <Button variant="ghost" className="text-white hover:bg-[#795C34]">
-                  <History className="w-4 h-4 mr-2" />
-                  Historia
-                </Button>
-              </Link>
-
-              {isAdmin && (
-                <Link href="/tabla">
-                  <Button variant="ghost" className="text-white hover:bg-[#795C34]">
-                    <Table className="w-4 h-4 mr-2" />
-                    Tabla Estudiantes
-                  </Button>
-                </Link>
-              )}
-            </div>
-
-            {/* Desktop Right Buttons */}
-            <div className="hidden md:flex items-center space-x-3">
-              <Button 
-                onClick={() => setShowRegistrationModal(true)}
-                className="bg-[#9A784F] hover:bg-[#795C34] text-white"
-              >
-                <UserPlus className="w-4 h-4 mr-2" />
-                Inscripción
-              </Button>
-
-              <Button 
-                variant="ghost" 
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
-              </Button>
-            </div>
-
-            {/* Título del sistema - Desktop */}
-            <div className="hidden md:block">
-              <span className="text-white font-bold text-lg">
-                Sistema de Gestión de Prácticas Musicales
-              </span>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="md:hidden flex items-center justify-between w-full">
-              <span className="text-white text-xs font-bold line-clamp-2 block leading-tight">
-                Sistema de Gestión de Prácticas Musicales
-              </span>
-              <MobileNavigation />
+              <h2 className="text-4xl md:text-6xl font-black text-primary-foreground uppercase leading-none tracking-tighter relative z-10">
+                Sistema<br/>Integral
+              </h2>
+              <div className="flex justify-between items-end relative z-10 mt-8">
+                <span className="text-2xl md:text-4xl font-black text-black/80 tracking-tighter">2026</span>
+                <span className="text-sm font-bold bg-white/20 text-white px-4 py-2 rounded-full backdrop-blur-md">
+                  Bienvenido, Admin
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </nav>
 
-      {/* Modal de Selección de Inscripción */}
-      <Dialog open={showRegistrationModal} onOpenChange={setShowRegistrationModal}>
-        <DialogContent className="sm:max-w-[700px] max-w-[95%] w-[95%] mx-auto p-0 overflow-hidden border-[#9A784F] shadow-2xl rounded-lg max-h-[90vh]">
-          {/* Header con botón de cerrar */}
-          <div className="relative bg-gradient-to-r from-[#795C34] to-[#65350F] p-6 text-white">
-            <DialogHeader className="text-center">
-              <DialogTitle className="text-2xl font-bold">
-                Inscripción
-              </DialogTitle>
-              <DialogDescription className="text-[#F8F4F0] mt-2">
-                Para mantener el orden para todos los estudiantes.
-              </DialogDescription>
-            </DialogHeader>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-4 top-4 text-white hover:bg-white/20"
-              onClick={() => setShowRegistrationModal(false)}
-            >
-              <X className="w-5 h-5" />
-            </Button>
+        {/* NAVEGACIÓN SECUNDARIA */}
+        <div className="flex items-center justify-between px-6 py-3 border-b border-black/10 bg-white/10 relative z-10">
+          <div className="flex gap-6 text-sm font-bold text-foreground">
+            <span className="border-b-2 border-foreground pb-1 cursor-pointer">Resumen</span>
+            <span className="text-foreground/50 hover:text-foreground cursor-pointer transition-colors">Trabajo</span>
           </div>
-          
-          <div className="p-6 max-h-[calc(90vh-100px)] overflow-y-auto bg-white">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Inscripción de Estudiantes */}
-              <Card 
-                className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-[#9A784F] bg-white"
-                onClick={() => {
-                  setShowRegistrationModal(false);
-                  router.push('/inscripcion_alumno');
-                }}
-              >
-                <CardHeader className="text-center">
-                  <div className="mx-auto w-20 h-20 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-4 border-4 border-[#E8D5C4]">
-                    <User className="w-10 h-10 text-[#9A784F]" />
-                  </div>
-                  <CardTitle className="text-xl text-[#362511]">Inscripción de Estudiantes</CardTitle>
-                  <CardDescription className="text-[#65350F] font-medium">
-                    Para nuevos estudiantes que desean unirse al sistema
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-[#362511] mb-6">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#9A784F] rounded-full"></div>
-                      <span>Información personal del estudiante</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#9A784F] rounded-full"></div>
-                      <span>Datos académicos y musicales</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#9A784F] rounded-full"></div>
-                      <span>Información de salud</span>
-                    </div>
-                  </div>
-                  <Button className="w-full bg-[#9A784F] hover:bg-[#795C34] font-bold">
-                    Comenzar Inscripción
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+          <Button variant="ghost" className="text-xs font-bold rounded-full hover:bg-black/5">
+            Ver más <ChevronDown className="w-4 h-4 ml-1" />
+          </Button>
+        </div>
 
-            {/* Información adicional */}
-            <div className="bg-[#F8F4F0] border border-[#E8D5C4] rounded-lg p-4 mt-6">
-              <div className="flex items-start gap-3">
-                <Info className="mt-0.5 h-5 w-5 shrink-0 text-[#795C34]" aria-hidden="true" />
-                <div>
-                  <h4 className="font-bold text-[#362511] mb-1">Proceso de Inscripción Completo</h4>
-                  <p className="text-[#65350F] text-sm">
-                    Recomendamos comenzar con la <strong>Inscripción de Estudiantes</strong> y luego completar 
-                    con la <strong>Inscripción de Representantes</strong>.
+        {/* SECCIÓN 2: INTRODUCCIÓN Y CONTACTO */}
+        <div className="grid grid-cols-1 md:grid-cols-12 border-b border-black/10 relative z-10">
+          
+          <div className="md:col-span-4 p-6 border-r border-black/10">
+            <div className="bg-[#1a1a1a] text-white rounded-3xl p-6 h-full min-h-[300px] flex flex-col justify-between relative overflow-hidden shadow-xl border border-white/10">
+               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-0"></div>
+               
+               <div className="relative z-10">
+                  <span className="text-xs text-white/60 mb-2 block font-medium">Hola,</span>
+                  <h3 className="text-3xl font-bold leading-tight mb-4">Mi nombre es <br/>Administrador</h3>
+                  <p className="text-xs text-white/70 leading-relaxed mt-4">
+                    Gestiono los recursos y el talento de la fundación para asegurar que la música llegue a todos.
                   </p>
+               </div>
+            </div>
+          </div>
+
+          <div className="md:col-span-8 p-6 flex flex-col gap-6 bg-white/5">
+            <Card className="bg-transparent border-0 shadow-none">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-foreground">Introducción</h3>
+                <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
+                  <ChevronDown className="w-4 h-4 text-foreground" />
+                </div>
+              </div>
+              <div className="bg-white/30 backdrop-blur-md border border-white/50 rounded-2xl p-5 shadow-sm">
+                <p className="text-sm text-foreground/80 leading-relaxed font-medium">
+                  Como administrador de la fundación, mi objetivo es facilitar la inscripción, el seguimiento académico y la gestión de eventos musicales, garantizando una experiencia óptima para estudiantes y profesores.
+                </p>
+              </div>
+            </Card>
+
+            <div>
+              <div className="flex items-center justify-between mb-4 mt-2">
+                <h3 className="text-sm font-bold text-foreground">Acceso Rápido</h3>
+                <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
+                  <ChevronDown className="w-4 h-4 text-foreground" />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <Link href="/tabla" className="bg-[#1a1a1a] text-white rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform shadow-lg border border-white/10">
+                  <Users className="w-6 h-6" />
+                  <span className="text-[10px] font-bold">Estudiantes</span>
+                </Link>
+                <Link href="/inscripcion_alumno" className="bg-primary text-primary-foreground rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform shadow-lg border border-primary/50">
+                  <UserPlus className="w-6 h-6" />
+                  <span className="text-[10px] font-bold">Inscribir</span>
+                </Link>
+                <div className="bg-white/40 backdrop-blur-md text-foreground rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform shadow-sm border border-white/60">
+                  <Mail className="w-6 h-6" />
+                  <span className="text-[10px] font-bold">Mensajes</span>
                 </div>
               </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Hero Section */}
-      <section 
-        className="relative py-20 text-white overflow-hidden min-h-[500px] flex items-center"
-        style={{
-          backgroundImage: 'url(/images/fondo.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        }}
-      >
-        <div className="absolute inset-0 bg-black/50"></div>
-        
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-[#F8F4F0] drop-shadow-lg">
-              Sistema Integral de Gestión de Prácticas Musicales
-            </h1>
-            <div className="text-xl md:text-2xl mb-6 text-white font-light">
-              <p>Música</p>
-              <p>Cultura</p>
-              <p>Arte</p>
-            </div>
-            <p className="text-lg md:text-xl mb-8 text-[#E8D5C4] font-medium">
-              Formando músicos, transformando vidas
-            </p>
-          </div>
         </div>
-      </section>
 
-      {/* Features Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-[#362511] mb-4 drop-shadow-sm">
-              Bienvenido al Sistema
-            </h2>
-            <p className="text-lg text-[#65350F] max-w-2xl mx-auto font-medium">
-              Descubre el mundo de la música a través de nuestros programas educativos
-            </p>
-          </div>
+        {/* SECCIÓN 3: COLUMNAS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-black/10 bg-white/5 relative z-10">
+          
+          {/* Columna 1 */}
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-foreground">Módulos</h3>
+              <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
+                <ChevronDown className="w-4 h-4 text-foreground" />
+              </div>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {/* Instrumentos Card */}
-            <Card className="text-center hover:shadow-xl transition-all duration-300 border-2 border-[#E8D5C4] shadow-lg bg-white">
-              <CardHeader>
-                <div className="mx-auto w-20 h-20 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-4 border-4 border-[#E8D5C4]">
-                  <Music className="w-10 h-10 text-[#9A784F]" />
-                </div>
-                <CardTitle className="text-2xl text-[#362511]">Instrumentos</CardTitle>
-                <CardDescription className="text-[#65350F] font-medium">
-                  Conoce los instrumentos musicales disponibles
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/inicio/instrumentos">
-                  <Button className="w-full bg-[#65350F] hover:bg-[#362511]">
-                    Explorar Instrumentos
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Historia Card */}
-            <Card className="text-center hover:shadow-xl transition-all duration-300 border-2 border-[#E8D5C4] shadow-lg bg-white">
-              <CardHeader>
-                <div className="mx-auto w-20 h-20 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-4 border-4 border-[#E8D5C4]">
-                  <History className="w-10 h-10 text-[#795C34]" />
-                </div>
-                <CardTitle className="text-2xl text-[#362511]">Nuestra Historia</CardTitle>
-                <CardDescription className="text-[#65350F] font-medium">
-                  Descubre la historia del Sistema Nacional de Orquestas
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="#historia">
-                  <Button className="w-full bg-[#65350F] hover:bg-[#362511]">
-                    Conocer Historia
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Inscripción Card */}
-            <Card className="text-center hover:shadow-xl transition-all duration-300 border-2 border-[#E8D5C4] shadow-lg bg-white">
-              <CardHeader>
-                <div className="mx-auto w-20 h-20 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-4 border-4 border-[#E8D5C4]">
-                  <UserPlus className="w-10 h-10 text-[#65350F]" />
-                </div>
-                <CardTitle className="text-2xl text-[#362511]">Inscripción</CardTitle>
-                <CardDescription className="text-[#65350F] font-medium">
-                  Únete a nuestra comunidad musical
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  className="w-full bg-[#65350F] hover:bg-[#362511]"
-                  onClick={() => setShowRegistrationModal(true)}
-                >
-                  Inscribirse Ahora
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sección de Tabla de Estudiantes */}
-          {isAdmin && (
-            <div className="max-w-4xl mx-auto mt-12 text-center">
-              <Card className="border-2 border-[#65350F] bg-[#F8F4F0] shadow-lg">
-                <CardHeader>
-                  <div className="mx-auto w-16 h-16 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-4 border-4 border-[#E8D5C4]">
-                    <Table className="w-8 h-8 text-[#65350F]" />
+            <div className="space-y-4">
+              <div className="border border-white/40 bg-white/20 backdrop-blur-md rounded-2xl p-5 hover:border-primary/50 transition-all cursor-pointer">
+                <div className="flex justify-between items-start mb-2">
+                  <Tag variant="primary">Activo</Tag>
+                  <div className="w-5 h-5 rounded-full bg-white/50 flex items-center justify-center">
+                    <Briefcase className="w-3 h-3 text-foreground/70" />
                   </div>
-                  <CardTitle className="text-2xl text-[#362511]">Tabla de Estudiantes</CardTitle>
-                  <CardDescription className="text-[#65350F] font-medium">
-                    Visualiza todos los estudiantes registrados en el sistema
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Link href="/tabla">
-                    <Button className="bg-[#65350F] hover:bg-[#362511]">
-                      <Table className="w-4 h-4 mr-2" />
-                      Ver Tabla de Estudiantes
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Historia Section */}
-      <section 
-        id="historia" 
-        className="relative py-20 text-white overflow-hidden"
-        style={{
-          backgroundImage: 'url(/images/fondo.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        }}
-      >
-        <div className="absolute inset-0 bg-black/60"></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-6 text-[#F8F4F0] drop-shadow-lg">
-              Historia del Sistema
-            </h2>
-            
-            <div className="flex items-center justify-center mb-8">
-              <div className="w-16 h-px bg-white"></div>
-              <div className="mx-4">
-                <Star className="text-white w-6 h-6" />
+                </div>
+                <h4 className="font-bold text-foreground text-sm mt-3">Inscripciones</h4>
+                <p className="text-xs text-foreground/60 mt-1">Gestión de nuevos ingresos</p>
+                <div className="flex justify-between items-center text-[10px] font-bold text-foreground/50 mt-4 pt-3 border-t border-black/5">
+                  <span>Ver todo</span>
+                  <span>12 Pendientes</span>
+                </div>
               </div>
-              <div className="w-16 h-px bg-white"></div>
-            </div>
 
-            <div className="space-y-4 text-left bg-white/10 backdrop-blur-sm rounded-lg p-6">
-              <p className="text-white">
-                El Sistema Nacional de Orquestas y Coros Juveniles e Infantiles de Venezuela, 
-                conocido como <strong className="text-[#F8F4F0]">&quot;El Sistema&quot;</strong>, es un programa de educación musical fundado 
-                en 1975 por el maestro José Antonio Abreu.
-              </p>
-              
-              <p className="text-white">
-                Su misión es sistematizar la instrucción y práctica colectiva e individual 
-                de la música a través de orquestas sinfónicas y coros, como instrumentos 
-                de organización social y desarrollo humanístico.
-              </p>
-
-              <blockquote className="italic border-l-4 border-[#F8F4F0] pl-4 my-4 text-[#F8F4F0]">
-                &quot;La música es un instrumento irremplazable para unir a las personas.&quot;
-                <footer className="mt-2 text-white">- José Antonio Abreu</footer>
-              </blockquote>
-
-              <p className="text-white">
-                Hoy en día, El Sistema atiende a más de 800,000 niños y jóvenes en todo el territorio 
-                venezolano, demostrando que la música puede ser una poderosa herramienta de 
-                transformación social.
-              </p>
+              <div className="border border-white/40 bg-white/20 backdrop-blur-md rounded-2xl p-5 hover:border-primary/50 transition-all cursor-pointer">
+                <div className="flex justify-between items-start mb-2">
+                  <Tag variant="glass">Base de Datos</Tag>
+                  <div className="w-5 h-5 rounded-full bg-white/50 flex items-center justify-center">
+                    <Music className="w-3 h-3 text-foreground/70" />
+                  </div>
+                </div>
+                <h4 className="font-bold text-foreground text-sm mt-3">Partituras</h4>
+                <p className="text-xs text-foreground/60 mt-1">Administrar archivos musicales</p>
+                <div className="flex justify-between items-center text-[10px] font-bold text-foreground/50 mt-4 pt-3 border-t border-black/5">
+                  <span>Ver todo</span>
+                  <span>Actualizado</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="bg-[#362511] text-white py-8 border-t border-[#795C34]">
-        <div className="container mx-auto px-4">
-          <div className="border-t border-[#795C34] mt-6 pt-6 text-center text-[#D4B8A4]">
-            <p>&copy; 2024 Sistema Nacional de Orquestas. Todos los derechos reservados.</p>
+          {/* Columna 2 */}
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-foreground">Expertise</h3>
+              <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
+                <ChevronDown className="w-4 h-4 text-foreground" />
+              </div>
+            </div>
+
+            <p className="text-xs text-foreground/70 font-medium mb-6 leading-relaxed">
+              Gestión Académica, Administración de Personal, Logística de Eventos, Educación Musical y Desarrollo Comunitario.
+            </p>
+
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-bold text-foreground">Habilidades</h4>
+              <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
+                <ChevronDown className="w-4 h-4 text-foreground" />
+              </div>
+            </div>
+
+            <div className="bg-[#e8e3d9] rounded-2xl h-32 w-full mb-4 overflow-hidden relative border border-white/50">
+              <div className="absolute inset-0 flex items-center justify-center opacity-40">
+                <Music className="w-16 h-16 text-black" />
+              </div>
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+                <div className="w-8 h-8 rounded-full bg-[#FF9A00] flex items-center justify-center text-[10px] font-bold text-white shadow-sm">Ai</div>
+                <div className="w-8 h-8 rounded-full bg-[#00005B] flex items-center justify-center text-[10px] font-bold text-white shadow-sm">Ps</div>
+                <div className="w-8 h-8 rounded-full bg-[#0066FF] flex items-center justify-center text-[10px] font-bold text-white shadow-sm">Id</div>
+                <div className="w-8 h-8 rounded-full bg-[#FF3366] flex items-center justify-center text-[10px] font-bold text-white shadow-sm">Pr</div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-bold text-foreground">Softskills</h4>
+              <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
+                <ChevronDown className="w-4 h-4 text-foreground" />
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              <Tag variant="dark">#Liderazgo</Tag>
+              <Tag variant="glass">#Trabajo en equipo</Tag>
+              <Tag variant="glass">#Resolución</Tag>
+              <Tag variant="dark">#Comunicación</Tag>
+            </div>
           </div>
+
+          {/* Columna 3 */}
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-foreground">Educación</h3>
+              <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
+                <ChevronDown className="w-4 h-4 text-foreground" />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-[#1a1a1a] text-white rounded-2xl p-5 shadow-lg border border-white/10">
+                <div className="flex justify-between items-start mb-4">
+                  <Tag variant="dark">2026</Tag>
+                  <Award className="w-5 h-5 text-white/50" />
+                </div>
+                <p className="text-[10px] text-white/60 mb-1">Actual</p>
+                <h4 className="font-bold text-sm leading-tight mb-2">Gestión de Instituciones Culturales</h4>
+                <p className="text-[10px] text-white/50">Universidad Nacional</p>
+              </div>
+
+              <div className="bg-[#1a1a1a] text-white rounded-2xl p-5 shadow-lg border border-white/10">
+                <div className="flex justify-between items-start mb-4">
+                  <Tag variant="dark">2020 - 2024</Tag>
+                  <CalendarDays className="w-5 h-5 text-white/50" />
+                </div>
+                <p className="text-[10px] text-white/60 mb-1">Grado</p>
+                <h4 className="font-bold text-sm leading-tight mb-2">Licenciatura en Música</h4>
+                <p className="text-[10px] text-white/50">Conservatorio de Música</p>
+              </div>
+            </div>
+          </div>
+
         </div>
-      </footer>
+
+      </div>
     </div>
-  );
-}
-
-// Componente principal que provee la sesión
-export default function HomePage() {
-  return (
-    <HomeContent />
-  );
+  )
 }
