@@ -1,472 +1,231 @@
-// app/page.tsx
-'use client';
+// app/dashboard/page.tsx
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { 
+  ChevronDown, 
+  UserPlus, 
+  FileText, 
+  Mail, 
+  Music,
+  CalendarDays,
+  Award,
+  Users,
+  Settings,
+  Clock,
+  Briefcase
+} from 'lucide-react'
+import Link from 'next/link'
 
-import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Music, History, UserPlus, Star, User, ArrowRight, X, Table, LogOut, Menu, Info } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-
-// Componente interno que usa useSession
-function HomeContent() {
-  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const router = useRouter();
-  const { data: session, status } = useSession();
-  
-  // Determinar si el usuario es administrador
-  const isAdmin = session?.user?.rol === 'administrador';
-
-  const handleLogout = async () => {
-    try {
-      setIsLoggingOut(true);
-      await signOut({ 
-        redirect: false
-      });
-      toast.success('Sesión cerrada exitosamente');
-      router.push('/');
-      router.refresh();
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-      toast.error('Error al cerrar sesión');
-    } finally {
-      setIsLoggingOut(false);
-    }
+// Componente para las etiquetas estilo "Pill"
+const Tag = ({ children, variant = 'default' }: { children: React.ReactNode, variant?: 'default' | 'primary' | 'outline' }) => {
+  const base = "px-3 py-1.5 text-xs font-bold rounded-full border transition-colors";
+  const variants = {
+    default: "bg-black/5 text-foreground border-transparent hover:bg-black/10",
+    primary: "bg-primary text-primary-foreground border-primary hover:bg-primary/90",
+    outline: "bg-transparent text-foreground border-border hover:bg-black/5"
   };
+  return <span className={`${base} ${variants[variant]}`}>{children}</span>;
+};
 
-  // Navegación móvil
-  const MobileNavigation = () => (
-    <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden text-white">
-          <Menu className="w-5 h-5" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-[280px] bg-[#362511] border-l-[#795C34]">
-        <div className="flex flex-col gap-3 mt-8">
-          <Link href="/inicio/instrumentos" onClick={() => setIsMobileMenuOpen(false)}>
-            <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-[#795C34]">
-              <Music className="w-4 h-4" />
-              Instrumentos
-            </Button>
-          </Link>
-          
-          <Link href="#historia" onClick={() => setIsMobileMenuOpen(false)}>
-            <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-[#795C34]">
-              <History className="w-4 h-4" />
-              Historia
-            </Button>
-          </Link>
-
-          {isAdmin && (
-            <Link href="/tabla" onClick={() => setIsMobileMenuOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-[#795C34]">
-                <Table className="w-4 h-4" />
-                Tabla Estudiantes
-              </Button>
-            </Link>
-          )}
-
-          <Button 
-            onClick={() => {
-              setShowRegistrationModal(true);
-              setIsMobileMenuOpen(false);
-            }}
-            className="w-full justify-start gap-2 bg-[#9A784F] hover:bg-[#795C34] text-white"
-          >
-            <UserPlus className="w-4 h-4" />
-            Inscripción
-          </Button>
-
-          <Button 
-            variant="ghost" 
-            onClick={() => {
-              handleLogout();
-              setIsMobileMenuOpen(false);
-            }}
-            disabled={isLoggingOut}
-            className="w-full justify-start gap-2 bg-red-600 hover:bg-red-700 text-white"
-          >
-            <LogOut className="w-4 h-4" />
-            {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
-          </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-
-  // Si está cargando la sesión, mostrar un indicador
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#F8F4F0] via-[#E8D5C4] to-[#D4B8A4] flex items-center justify-center">
-        <div className="text-center px-4">
-          <div className="w-10 h-10 border-4 border-[#795C34] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-[#362511] text-base">Cargando...</p>
-        </div>
-      </div>
-    );
-  }
-
+export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F8F4F0] via-[#E8D5C4] to-[#D4B8A4]">
-      {/* Navigation Header */}
-      <nav className="bg-[#362511] border-b border-[#795C34] sticky top-0 z-50 shadow-lg">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-6">
-              <Link href="/inicio/instrumentos">
-                <Button variant="ghost" className="text-white hover:bg-[#795C34]">
-                  <Music className="w-4 h-4 mr-2" />
-                  Instrumentos
-                </Button>
-              </Link>
-              
-              <Link href="#historia">
-                <Button variant="ghost" className="text-white hover:bg-[#795C34]">
-                  <History className="w-4 h-4 mr-2" />
-                  Historia
-                </Button>
-              </Link>
-
-              {isAdmin && (
-                <Link href="/tabla">
-                  <Button variant="ghost" className="text-white hover:bg-[#795C34]">
-                    <Table className="w-4 h-4 mr-2" />
-                    Tabla Estudiantes
-                  </Button>
-                </Link>
-              )}
-            </div>
-
-            {/* Desktop Right Buttons */}
-            <div className="hidden md:flex items-center space-x-3">
-              <Button 
-                onClick={() => setShowRegistrationModal(true)}
-                className="bg-[#9A784F] hover:bg-[#795C34] text-white"
-              >
-                <UserPlus className="w-4 h-4 mr-2" />
-                Inscripción
-              </Button>
-
-              <Button 
-                variant="ghost" 
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
-              </Button>
-            </div>
-
-            {/* Título del sistema - Desktop */}
-            <div className="hidden md:block">
-              <span className="text-white font-bold text-lg">
-                Sistema de Gestión de Prácticas Musicales
-              </span>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="md:hidden flex items-center justify-between w-full">
-              <span className="text-white text-xs font-bold line-clamp-2 block leading-tight">
-                Sistema de Gestión de Prácticas Musicales
-              </span>
-              <MobileNavigation />
-            </div>
+    <div className="min-h-screen p-4 md:p-8 font-montserrat">
+      <div className="max-w-6xl mx-auto space-y-6">
+        
+        {/* Header de la página */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-foreground">Panel de Control</h1>
+            <p className="text-muted-foreground text-sm font-medium mt-1">Gestiona tu fundación musical</p>
           </div>
+          <Button variant="outline" className="rounded-full gap-2 border-border">
+            <Settings className="w-4 h-4" />
+            Ajustes
+          </Button>
         </div>
-      </nav>
 
-      {/* Modal de Selección de Inscripción */}
-      <Dialog open={showRegistrationModal} onOpenChange={setShowRegistrationModal}>
-        <DialogContent className="sm:max-w-[700px] max-w-[95%] w-[95%] mx-auto p-0 overflow-hidden border-[#9A784F] shadow-2xl rounded-lg max-h-[90vh]">
-          {/* Header con botón de cerrar */}
-          <div className="relative bg-gradient-to-r from-[#795C34] to-[#65350F] p-6 text-white">
-            <DialogHeader className="text-center">
-              <DialogTitle className="text-2xl font-bold">
-                Inscripción
-              </DialogTitle>
-              <DialogDescription className="text-[#F8F4F0] mt-2">
-                Para mantener el orden para todos los estudiantes.
-              </DialogDescription>
-            </DialogHeader>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-4 top-4 text-white hover:bg-white/20"
-              onClick={() => setShowRegistrationModal(false)}
-            >
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
+        {/* Sección de Introducción (Similar al "Hello, My name is Qorry") */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           
-          <div className="p-6 max-h-[calc(90vh-100px)] overflow-y-auto bg-white">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Inscripción de Estudiantes */}
-              <Card 
-                className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-[#9A784F] bg-white"
-                onClick={() => {
-                  setShowRegistrationModal(false);
-                  router.push('/inscripcion_alumno');
-                }}
-              >
-                <CardHeader className="text-center">
-                  <div className="mx-auto w-20 h-20 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-4 border-4 border-[#E8D5C4]">
-                    <User className="w-10 h-10 text-[#9A784F]" />
-                  </div>
-                  <CardTitle className="text-xl text-[#362511]">Inscripción de Estudiantes</CardTitle>
-                  <CardDescription className="text-[#65350F] font-medium">
-                    Para nuevos estudiantes que desean unirse al sistema
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-[#362511] mb-6">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#9A784F] rounded-full"></div>
-                      <span>Información personal del estudiante</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#9A784F] rounded-full"></div>
-                      <span>Datos académicos y musicales</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#9A784F] rounded-full"></div>
-                      <span>Información de salud</span>
-                    </div>
-                  </div>
-                  <Button className="w-full bg-[#9A784F] hover:bg-[#795C34] font-bold">
-                    Comenzar Inscripción
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Información adicional */}
-            <div className="bg-[#F8F4F0] border border-[#E8D5C4] rounded-lg p-4 mt-6">
-              <div className="flex items-start gap-3">
-                <Info className="mt-0.5 h-5 w-5 shrink-0 text-[#795C34]" aria-hidden="true" />
-                <div>
-                  <h4 className="font-bold text-[#362511] mb-1">Proceso de Inscripción Completo</h4>
-                  <p className="text-[#65350F] text-sm">
-                    Recomendamos comenzar con la <strong>Inscripción de Estudiantes</strong> y luego completar 
-                    con la <strong>Inscripción de Representantes</strong>.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Hero Section */}
-      <section 
-        className="relative py-20 text-white overflow-hidden min-h-[500px] flex items-center"
-        style={{
-          backgroundImage: 'url(/images/fondo.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        }}
-      >
-        <div className="absolute inset-0 bg-black/50"></div>
-        
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-[#F8F4F0] drop-shadow-lg">
-              Sistema Integral de Gestión de Prácticas Musicales
-            </h1>
-            <div className="text-xl md:text-2xl mb-6 text-white font-light">
-              <p>Música</p>
-              <p>Cultura</p>
-              <p>Arte</p>
-            </div>
-            <p className="text-lg md:text-xl mb-8 text-[#E8D5C4] font-medium">
-              Formando músicos, transformando vidas
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-[#362511] mb-4 drop-shadow-sm">
-              Bienvenido al Sistema
-            </h2>
-            <p className="text-lg text-[#65350F] max-w-2xl mx-auto font-medium">
-              Descubre el mundo de la música a través de nuestros programas educativos
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {/* Instrumentos Card */}
-            <Card className="text-center hover:shadow-xl transition-all duration-300 border-2 border-[#E8D5C4] shadow-lg bg-white">
-              <CardHeader>
-                <div className="mx-auto w-20 h-20 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-4 border-4 border-[#E8D5C4]">
-                  <Music className="w-10 h-10 text-[#9A784F]" />
-                </div>
-                <CardTitle className="text-2xl text-[#362511]">Instrumentos</CardTitle>
-                <CardDescription className="text-[#65350F] font-medium">
-                  Conoce los instrumentos musicales disponibles
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/inicio/instrumentos">
-                  <Button className="w-full bg-[#65350F] hover:bg-[#362511]">
-                    Explorar Instrumentos
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Historia Card */}
-            <Card className="text-center hover:shadow-xl transition-all duration-300 border-2 border-[#E8D5C4] shadow-lg bg-white">
-              <CardHeader>
-                <div className="mx-auto w-20 h-20 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-4 border-4 border-[#E8D5C4]">
-                  <History className="w-10 h-10 text-[#795C34]" />
-                </div>
-                <CardTitle className="text-2xl text-[#362511]">Nuestra Historia</CardTitle>
-                <CardDescription className="text-[#65350F] font-medium">
-                  Descubre la historia del Sistema Nacional de Orquestas
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="#historia">
-                  <Button className="w-full bg-[#65350F] hover:bg-[#362511]">
-                    Conocer Historia
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Inscripción Card */}
-            <Card className="text-center hover:shadow-xl transition-all duration-300 border-2 border-[#E8D5C4] shadow-lg bg-white">
-              <CardHeader>
-                <div className="mx-auto w-20 h-20 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-4 border-4 border-[#E8D5C4]">
-                  <UserPlus className="w-10 h-10 text-[#65350F]" />
-                </div>
-                <CardTitle className="text-2xl text-[#362511]">Inscripción</CardTitle>
-                <CardDescription className="text-[#65350F] font-medium">
-                  Únete a nuestra comunidad musical
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  className="w-full bg-[#65350F] hover:bg-[#362511]"
-                  onClick={() => setShowRegistrationModal(true)}
-                >
-                  Inscribirse Ahora
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sección de Tabla de Estudiantes */}
-          {isAdmin && (
-            <div className="max-w-4xl mx-auto mt-12 text-center">
-              <Card className="border-2 border-[#65350F] bg-[#F8F4F0] shadow-lg">
-                <CardHeader>
-                  <div className="mx-auto w-16 h-16 bg-[#F8F4F0] rounded-full flex items-center justify-center mb-4 border-4 border-[#E8D5C4]">
-                    <Table className="w-8 h-8 text-[#65350F]" />
-                  </div>
-                  <CardTitle className="text-2xl text-[#362511]">Tabla de Estudiantes</CardTitle>
-                  <CardDescription className="text-[#65350F] font-medium">
-                    Visualiza todos los estudiantes registrados en el sistema
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Link href="/tabla">
-                    <Button className="bg-[#65350F] hover:bg-[#362511]">
-                      <Table className="w-4 h-4 mr-2" />
-                      Ver Tabla de Estudiantes
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Historia Section */}
-      <section 
-        id="historia" 
-        className="relative py-20 text-white overflow-hidden"
-        style={{
-          backgroundImage: 'url(/images/fondo.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        }}
-      >
-        <div className="absolute inset-0 bg-black/60"></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-6 text-[#F8F4F0] drop-shadow-lg">
-              Historia del Sistema
-            </h2>
+          {/* Tarjeta de Bienvenida (Izquierda) */}
+          <div className="md:col-span-4 bg-foreground text-background rounded-[2rem] p-8 flex flex-col justify-between min-h-[300px] relative overflow-hidden shadow-lg">
+            {/* Patrón sutil de fondo */}
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent"></div>
             
-            <div className="flex items-center justify-center mb-8">
-              <div className="w-16 h-px bg-white"></div>
-              <div className="mx-4">
-                <Star className="text-white w-6 h-6" />
+            <div className="relative z-10">
+              <span className="text-xs font-bold uppercase tracking-widest text-background/70 mb-2 block">Hola,</span>
+              <h2 className="text-3xl font-black leading-tight mb-4">
+                Mi nombre es <br />
+                <span className="text-primary">Administrador</span>
+              </h2>
+              <p className="text-sm text-background/80 font-medium leading-relaxed">
+                Considero que la música es una herramienta fundamental para el desarrollo humano.
+              </p>
+            </div>
+
+            <div className="relative z-10 flex gap-2 mt-6">
+              <Link href="/tabla">
+                <Button className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
+                  Ver Estudiantes
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Tarjeta de Introducción (Derecha) */}
+          <div className="md:col-span-8 flex flex-col gap-6">
+            <Card className="border-border/50 bg-card rounded-[2rem] flex-1">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl font-bold flex items-center justify-between">
+                  Introducción
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Bienvenido al sistema de gestión. Desde aquí puedes administrar inscripciones, 
+                  revisar la tabla general de alumnos y gestionar los recursos de la fundación. 
+                  Utiliza el menú para navegar a las diferentes secciones.
+                </p>
+                
+                <div className="flex flex-wrap gap-2 mt-6">
+                  <Tag variant="primary">Dashboard</Tag>
+                  <Tag variant="outline">Gestión</Tag>
+                  <Tag variant="outline">Música</Tag>
+                  <Tag variant="outline">Administración</Tag>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Get In Touch (Redes / Contacto rápido) */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-foreground text-background rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:opacity-90 transition cursor-pointer">
+                <Mail className="w-6 h-6" />
+                <span className="text-[10px] font-bold">Correo</span>
               </div>
-              <div className="w-16 h-px bg-white"></div>
-            </div>
-
-            <div className="space-y-4 text-left bg-white/10 backdrop-blur-sm rounded-lg p-6">
-              <p className="text-white">
-                El Sistema Nacional de Orquestas y Coros Juveniles e Infantiles de Venezuela, 
-                conocido como <strong className="text-[#F8F4F0]">&quot;El Sistema&quot;</strong>, es un programa de educación musical fundado 
-                en 1975 por el maestro José Antonio Abreu.
-              </p>
-              
-              <p className="text-white">
-                Su misión es sistematizar la instrucción y práctica colectiva e individual 
-                de la música a través de orquestas sinfónicas y coros, como instrumentos 
-                de organización social y desarrollo humanístico.
-              </p>
-
-              <blockquote className="italic border-l-4 border-[#F8F4F0] pl-4 my-4 text-[#F8F4F0]">
-                &quot;La música es un instrumento irremplazable para unir a las personas.&quot;
-                <footer className="mt-2 text-white">- José Antonio Abreu</footer>
-              </blockquote>
-
-              <p className="text-white">
-                Hoy en día, El Sistema atiende a más de 800,000 niños y jóvenes en todo el territorio 
-                venezolano, demostrando que la música puede ser una poderosa herramienta de 
-                transformación social.
-              </p>
+              <div className="bg-primary text-primary-foreground rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:opacity-90 transition cursor-pointer">
+                <FileText className="w-6 h-6" />
+                <span className="text-[10px] font-bold">Reportes</span>
+              </div>
+              <div className="bg-card border-2 border-border text-foreground rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-muted transition cursor-pointer">
+                <Users className="w-6 h-6" />
+                <span className="text-[10px] font-bold">Usuarios</span>
+              </div>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="bg-[#362511] text-white py-8 border-t border-[#795C34]">
-        <div className="container mx-auto px-4">
-          <div className="border-t border-[#795C34] mt-6 pt-6 text-center text-[#D4B8A4]">
-            <p>&copy; 2024 Sistema Nacional de Orquestas. Todos los derechos reservados.</p>
+        {/* Sección Inferior: Columnas (Experiencia, Habilidades, Educación) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+          
+          {/* Columna 1: Accesos Rápidos (Experiencia) */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <h3 className="text-lg font-bold text-foreground">Módulos</h3>
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            </div>
+
+            <Card className="border-border/50 bg-card rounded-[1.5rem] hover:border-primary/50 transition-colors cursor-pointer group">
+              <CardContent className="p-5">
+                <div className="flex justify-between items-start mb-4">
+                  <Tag variant="primary">Activo</Tag>
+                  <UserPlus className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
+                <h4 className="font-bold text-foreground text-lg mb-1">Inscripciones</h4>
+                <p className="text-xs text-muted-foreground mb-4">Registra nuevos alumnos y representantes.</p>
+                <Link href="/inscripcion_alumno" className="text-xs font-bold text-primary hover:underline">
+                  Ir al formulario →
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50 bg-card rounded-[1.5rem] hover:border-primary/50 transition-colors cursor-pointer group">
+              <CardContent className="p-5">
+                <div className="flex justify-between items-start mb-4">
+                  <Tag variant="outline">Base de Datos</Tag>
+                  <Users className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
+                <h4 className="font-bold text-foreground text-lg mb-1">Estudiantes</h4>
+                <p className="text-xs text-muted-foreground mb-4">Consulta la tabla general de alumnos.</p>
+                <Link href="/tabla" className="text-xs font-bold text-primary hover:underline">
+                  Ver tabla →
+                </Link>
+              </CardContent>
+            </Card>
           </div>
+
+          {/* Columna 2: Habilidades / Estadísticas (Hard Skills) */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <h3 className="text-lg font-bold text-foreground">Resumen</h3>
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            </div>
+
+            <Card className="border-border/50 bg-card rounded-[1.5rem] overflow-hidden">
+              <div className="bg-foreground/5 p-6 flex flex-col items-center justify-center border-b border-border/50">
+                 <Music className="w-12 h-12 text-primary mb-3" />
+                 <span className="text-3xl font-black text-foreground">124</span>
+                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Alumnos Activos</span>
+              </div>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Inscripciones este mes</span>
+                  <span className="font-bold text-foreground">12</span>
+                </div>
+                <div className="w-full bg-border/50 h-2 rounded-full overflow-hidden">
+                  <div className="bg-primary w-[60%] h-full rounded-full"></div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50 bg-card rounded-[1.5rem] p-5">
+              <h4 className="font-bold text-foreground mb-3 text-sm">Herramientas</h4>
+              <div className="flex flex-wrap gap-2">
+                <Tag variant="primary">Partituras</Tag>
+                <Tag variant="default">Calendario</Tag>
+                <Tag variant="default">Pagos</Tag>
+                <Tag variant="outline">Inventario</Tag>
+              </div>
+            </Card>
+          </div>
+
+          {/* Columna 3: Educación / Eventos (Education) */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <h3 className="text-lg font-bold text-foreground">Próximos Eventos</h3>
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            </div>
+
+            <Card className="border-border/50 bg-card rounded-[1.5rem] hover:border-primary/50 transition-colors cursor-pointer">
+              <CardContent className="p-5">
+                <div className="flex justify-between items-center mb-3">
+                  <Tag variant="primary">2026</Tag>
+                  <CalendarDays className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <h4 className="font-bold text-foreground mb-1">Concierto de Gala</h4>
+                <p className="text-xs text-muted-foreground mb-2">Sala Principal - 7:00 PM</p>
+                <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground border-t border-border/50 pt-3 mt-3">
+                  <span>Invitados: 200</span>
+                  <span>Confirmado</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50 bg-card rounded-[1.5rem] hover:border-primary/50 transition-colors cursor-pointer">
+              <CardContent className="p-5">
+                <div className="flex justify-between items-center mb-3">
+                  <Tag variant="outline">2026</Tag>
+                  <Award className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <h4 className="font-bold text-foreground mb-1">Audiciones</h4>
+                <p className="text-xs text-muted-foreground mb-2">Nuevos ingresos - 9:00 AM</p>
+              </CardContent>
+            </Card>
+          </div>
+
         </div>
-      </footer>
+
+      </div>
     </div>
-  );
-}
-
-// Componente principal que provee la sesión
-export default function HomePage() {
-  return (
-    <HomeContent />
-  );
+  )
 }
