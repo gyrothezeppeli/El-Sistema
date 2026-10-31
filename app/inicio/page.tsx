@@ -1,3 +1,5 @@
+'use client'; // <-- ESTA ES LA LÍNEA QUE FALTABA
+
 // app/inicio/page.tsx
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -28,7 +30,7 @@ export default function InicioPage() {
       toast.success('Sesión cerrada exitosamente')
       router.push('/')
       router.refresh()
-    } catch (err) { // <-- 1. Corregido: cambiamos 'error' por 'err' (o lo quitamos)
+    } catch (err) { 
       toast.error('Error al cerrar sesión')
     }
   }
