@@ -21,6 +21,7 @@ export default function InicioPage() {
   const { data: session } = useSession()
   const router = useRouter()
   
+  // Validación de rol
   const isAdmin = session?.user?.rol === 'administrador'
 
   const handleLogout = async () => {
@@ -106,25 +107,27 @@ export default function InicioPage() {
               </Card>
             </Link>
 
-            {/* Módulo 2: Estudiantes */}
-            <Link href="/tabla" className="group">
-              <Card className="h-full bg-white/30 backdrop-blur-md border border-white/50 shadow-sm hover:shadow-xl hover:border-blue-500/50 hover:bg-white/40 transition-all duration-300 rounded-[2rem]">
-                <CardContent className="p-8 flex flex-col h-full">
-                  <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                    <Users className="w-7 h-7 text-blue-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">Base de Datos</h3>
-                  <p className="text-sm text-foreground/60 mb-6 flex-1 font-medium">
-                    Consulta la tabla general de alumnos, edita expedientes y gestiona el estatus del personal.
-                  </p>
-                  <div className="flex items-center text-blue-600 font-bold text-sm">
-                    Ver Estudiantes
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+            {/* Módulo 2: Estudiantes (SOLO ADMINISTRADORES) */}
+            {isAdmin && (
+              <Link href="/tabla" className="group">
+                <Card className="h-full bg-white/30 backdrop-blur-md border border-white/50 shadow-sm hover:shadow-xl hover:border-blue-500/50 hover:bg-white/40 transition-all duration-300 rounded-[2rem]">
+                  <CardContent className="p-8 flex flex-col h-full">
+                    <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      <Users className="w-7 h-7 text-blue-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">Base de Datos</h3>
+                    <p className="text-sm text-foreground/60 mb-6 flex-1 font-medium">
+                      Consulta la tabla general de alumnos, edita expedientes y gestiona el estatus del personal.
+                    </p>
+                    <div className="flex items-center text-blue-600 font-bold text-sm">
+                      Ver Estudiantes
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            )}
 
-            {/* Módulo 3: Inscripciones (Restaurado) */}
+            {/* Módulo 3: Inscripciones */}
             <Link href="/inscripcion_alumno" className="group">
               <Card className="h-full bg-white/30 backdrop-blur-md border border-white/50 shadow-sm hover:shadow-xl hover:border-purple-500/50 hover:bg-white/40 transition-all duration-300 rounded-[2rem]">
                 <CardContent className="p-8 flex flex-col h-full">
