@@ -1,279 +1,193 @@
-// app/dashboard/page.tsx
+'use client';
+
+// app/inicio/page.tsx
+import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { 
-  ChevronDown, 
+  Users, 
+  Music, 
   UserPlus, 
-  Mail, 
-  Music,
-  CalendarDays,
-  Award,
-  Users,
-  Briefcase,
-  ArrowDownRight,
-  Search
+  LogOut, 
+  User as UserIcon,
+  ShieldCheck,
+  Star
 } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 
-// Componente para las etiquetas estilo "Pill"
-const Tag = ({ children, variant = 'glass' }: { children: React.ReactNode, variant?: 'glass' | 'primary' | 'dark' }) => {
-  const base = "px-3 py-1.5 text-[11px] font-bold rounded-full border transition-all backdrop-blur-md";
-  const variants = {
-    glass: "bg-black/5 text-foreground border-white/40 hover:bg-black/10",
-    primary: "bg-primary text-primary-foreground border-primary/50 shadow-[0_0_15px_rgba(208,98,36,0.4)]",
-    dark: "bg-black/80 text-white border-white/20 hover:bg-black",
-  };
-  return <span className={`${base} ${variants[variant]}`}>{children}</span>;
-};
+export default function InicioPage() {
+  const { data: session } = useSession()
+  const router = useRouter()
+  
+  // Validación de rol
+  const isAdmin = session?.user?.rol === 'administrador'
 
-export default function DashboardPage() {
+  const handleLogout = async () => {
+    try {
+      await signOut({ redirect: false })
+      toast.success('Sesión cerrada exitosamente')
+      router.push('/')
+      router.refresh()
+    } catch (err) { 
+      toast.error('Error al cerrar sesión')
+    }
+  }
+
   return (
-    <div className="min-h-screen p-4 md:p-8 font-montserrat">
+    <div className="min-h-screen p-4 md:p-8 font-montserrat flex justify-center">
       
-      {/* Contenedor principal con efecto Liquid Glass */}
-      <div className="max-w-[1200px] mx-auto bg-white/10 backdrop-blur-2xl border border-white/30 rounded-[2.5rem] shadow-[0_20px_60px_rgba(91,43,23,0.15),inset_0_1px_0_rgba(255,255,255,0.6)] overflow-hidden relative">
+      {/* Panel Principal (Liquid Glass Amplio) */}
+      <div className="w-full max-w-[1400px] bg-white/10 backdrop-blur-2xl border border-white/30 rounded-[2.5rem] shadow-[0_20px_60px_rgba(91,43,23,0.15),inset_0_1px_0_rgba(255,255,255,0.6)] overflow-hidden relative">
         
         {/* Brillo sutil de fondo */}
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/20 blur-[100px] rounded-full pointer-events-none"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/20 blur-[120px] rounded-full pointer-events-none"></div>
 
-        {/* HEADER SUPERIOR */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-black/10 bg-white/20 relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-foreground text-background flex items-center justify-center font-bold text-sm">
-              F
+        <div className="p-6 md:p-12 relative z-10">
+          
+          {/* SECCIÓN SUPERIOR: Bienvenida y Tarjeta de Usuario */}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
+            <div>
+              <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tight mb-2">
+                Hola, <span className="text-primary">{session?.user?.nombre || 'Estudiante'}</span>
+              </h1>
+              <p className="text-base text-foreground/70 font-medium max-w-2xl">
+                Bienvenido al portal de la Fundación Musical. Desde aquí puedes acceder a tu material de estudio y gestionar tu cuenta.
+              </p>
             </div>
-            <h1 className="text-sm md:text-base font-bold text-foreground">Fundación Musical Latina</h1>
-          </div>
-          <div className="flex items-center gap-4 text-xs font-bold text-foreground/70">
-            <span className="hidden md:block uppercase tracking-wider">Panel de Gestión</span>
-            <Search className="w-4 h-4 cursor-pointer hover:text-primary transition-colors" />
-          </div>
-        </div>
 
-        {/* SECCIÓN 1: HERO Y ETIQUETAS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 border-b border-black/10">
-          <div className="p-8 flex flex-col justify-end items-start border-r border-black/10 bg-white/5">
-            <ArrowDownRight className="w-16 h-16 text-foreground mb-6 opacity-80" strokeWidth={1.5} />
-            <div className="flex flex-wrap gap-2">
-              <Tag variant="glass">#Gestión</Tag>
-              <Tag variant="glass">#Alumnos</Tag>
-              <Tag variant="glass">#Partituras</Tag>
-              <Tag variant="glass">#Eventos</Tag>
-              <Tag variant="glass">#Música</Tag>
-            </div>
-          </div>
-
-          <div className="md:col-span-2 p-6">
-            <div className="w-full h-full min-h-[250px] bg-primary rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden shadow-inner border border-primary/50 group">
-              <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-10 mix-blend-overlay"></div>
-              
-              <h2 className="text-4xl md:text-6xl font-black text-primary-foreground uppercase leading-none tracking-tighter relative z-10">
-                Sistema<br/>Integral
-              </h2>
-              <div className="flex justify-between items-end relative z-10 mt-8">
-                <span className="text-2xl md:text-4xl font-black text-black/80 tracking-tighter">2026</span>
-                <span className="text-sm font-bold bg-white/20 text-white px-4 py-2 rounded-full backdrop-blur-md">
-                  Bienvenido, Admin
+            {/* Tarjeta de Usuario Pequeña */}
+            <div className="flex items-center gap-4 bg-white/30 backdrop-blur-md border border-white/50 p-3 pr-5 rounded-3xl shadow-sm">
+              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
+                <UserIcon className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-foreground leading-tight">
+                  {session?.user?.nombre} {session?.user?.apellido}
+                </span>
+                <span className="text-[10px] text-foreground/60 font-bold uppercase tracking-wider flex items-center gap-1 mt-0.5">
+                  {isAdmin ? <><ShieldCheck className="w-3 h-3" /> Administrador</> : 'Estudiante'}
                 </span>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* NAVEGACIÓN SECUNDARIA */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-black/10 bg-white/10 relative z-10">
-          <div className="flex gap-6 text-sm font-bold text-foreground">
-            <span className="border-b-2 border-foreground pb-1 cursor-pointer">Resumen</span>
-            <span className="text-foreground/50 hover:text-foreground cursor-pointer transition-colors">Trabajo</span>
-          </div>
-          <Button variant="ghost" className="text-xs font-bold rounded-full hover:bg-black/5">
-            Ver más <ChevronDown className="w-4 h-4 ml-1" />
-          </Button>
-        </div>
-
-        {/* SECCIÓN 2: INTRODUCCIÓN Y CONTACTO */}
-        <div className="grid grid-cols-1 md:grid-cols-12 border-b border-black/10 relative z-10">
-          
-          <div className="md:col-span-4 p-6 border-r border-black/10">
-            <div className="bg-[#1a1a1a] text-white rounded-3xl p-6 h-full min-h-[300px] flex flex-col justify-between relative overflow-hidden shadow-xl border border-white/10">
-               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-0"></div>
-               
-               <div className="relative z-10">
-                  <span className="text-xs text-white/60 mb-2 block font-medium">Hola,</span>
-                  <h3 className="text-3xl font-bold leading-tight mb-4">Mi nombre es <br/>Administrador</h3>
-                  <p className="text-xs text-white/70 leading-relaxed mt-4">
-                    Gestiono los recursos y el talento de la fundación para asegurar que la música llegue a todos.
-                  </p>
-               </div>
+              <div className="w-px h-8 bg-black/10 mx-2"></div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleLogout}
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-full h-10 w-10"
+                title="Cerrar Sesión"
+              >
+                <LogOut className="w-5 h-5" />
+              </Button>
             </div>
           </div>
 
-          <div className="md:col-span-8 p-6 flex flex-col gap-6 bg-white/5">
-            <Card className="bg-transparent border-0 shadow-none">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-foreground">Introducción</h3>
-                <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
-                  <ChevronDown className="w-4 h-4 text-foreground" />
-                </div>
-              </div>
-              <div className="bg-white/30 backdrop-blur-md border border-white/50 rounded-2xl p-5 shadow-sm">
-                <p className="text-sm text-foreground/80 leading-relaxed font-medium">
-                  Como administrador de la fundación, mi objetivo es facilitar la inscripción, el seguimiento académico y la gestión de eventos musicales, garantizando una experiencia óptima para estudiantes y profesores.
-                </p>
-              </div>
-            </Card>
-
-            <div>
-              <div className="flex items-center justify-between mb-4 mt-2">
-                <h3 className="text-sm font-bold text-foreground">Acceso Rápido</h3>
-                <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
-                  <ChevronDown className="w-4 h-4 text-foreground" />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <Link href="/tabla" className="bg-[#1a1a1a] text-white rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform shadow-lg border border-white/10">
-                  <Users className="w-6 h-6" />
-                  <span className="text-[10px] font-bold">Estudiantes</span>
-                </Link>
-                <Link href="/inscripcion_alumno" className="bg-primary text-primary-foreground rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform shadow-lg border border-primary/50">
-                  <UserPlus className="w-6 h-6" />
-                  <span className="text-[10px] font-bold">Inscribir</span>
-                </Link>
-                <div className="bg-white/40 backdrop-blur-md text-foreground rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform shadow-sm border border-white/60">
-                  <Mail className="w-6 h-6" />
-                  <span className="text-[10px] font-bold">Mensajes</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* SECCIÓN 3: COLUMNAS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-black/10 bg-white/5 relative z-10">
-          
-          {/* Columna 1 */}
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-foreground">Módulos</h3>
-              <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
-                <ChevronDown className="w-4 h-4 text-foreground" />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="border border-white/40 bg-white/20 backdrop-blur-md rounded-2xl p-5 hover:border-primary/50 transition-all cursor-pointer">
-                <div className="flex justify-between items-start mb-2">
-                  <Tag variant="primary">Activo</Tag>
-                  <div className="w-5 h-5 rounded-full bg-white/50 flex items-center justify-center">
-                    <Briefcase className="w-3 h-3 text-foreground/70" />
-                  </div>
-                </div>
-                <h4 className="font-bold text-foreground text-sm mt-3">Inscripciones</h4>
-                <p className="text-xs text-foreground/60 mt-1">Gestión de nuevos ingresos</p>
-                <div className="flex justify-between items-center text-[10px] font-bold text-foreground/50 mt-4 pt-3 border-t border-black/5">
-                  <span>Ver todo</span>
-                  <span>12 Pendientes</span>
-                </div>
-              </div>
-
-              <div className="border border-white/40 bg-white/20 backdrop-blur-md rounded-2xl p-5 hover:border-primary/50 transition-all cursor-pointer">
-                <div className="flex justify-between items-start mb-2">
-                  <Tag variant="glass">Base de Datos</Tag>
-                  <div className="w-5 h-5 rounded-full bg-white/50 flex items-center justify-center">
-                    <Music className="w-3 h-3 text-foreground/70" />
-                  </div>
-                </div>
-                <h4 className="font-bold text-foreground text-sm mt-3">Partituras</h4>
-                <p className="text-xs text-foreground/60 mt-1">Administrar archivos musicales</p>
-                <div className="flex justify-between items-center text-[10px] font-bold text-foreground/50 mt-4 pt-3 border-t border-black/5">
-                  <span>Ver todo</span>
-                  <span>Actualizado</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Columna 2 */}
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-foreground">Expertise</h3>
-              <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
-                <ChevronDown className="w-4 h-4 text-foreground" />
-              </div>
-            </div>
-
-            <p className="text-xs text-foreground/70 font-medium mb-6 leading-relaxed">
-              Gestión Académica, Administración de Personal, Logística de Eventos, Educación Musical y Desarrollo Comunitario.
-            </p>
-
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-bold text-foreground">Habilidades</h4>
-              <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
-                <ChevronDown className="w-4 h-4 text-foreground" />
-              </div>
-            </div>
-
-            <div className="bg-[#e8e3d9] rounded-2xl h-32 w-full mb-4 overflow-hidden relative border border-white/50">
-              <div className="absolute inset-0 flex items-center justify-center opacity-40">
-                <Music className="w-16 h-16 text-black" />
-              </div>
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
-                <div className="w-8 h-8 rounded-full bg-[#FF9A00] flex items-center justify-center text-[10px] font-bold text-white shadow-sm">Ai</div>
-                <div className="w-8 h-8 rounded-full bg-[#00005B] flex items-center justify-center text-[10px] font-bold text-white shadow-sm">Ps</div>
-                <div className="w-8 h-8 rounded-full bg-[#0066FF] flex items-center justify-center text-[10px] font-bold text-white shadow-sm">Id</div>
-                <div className="w-8 h-8 rounded-full bg-[#FF3366] flex items-center justify-center text-[10px] font-bold text-white shadow-sm">Pr</div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-bold text-foreground">Softskills</h4>
-              <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
-                <ChevronDown className="w-4 h-4 text-foreground" />
-              </div>
-            </div>
+          {/* MÓDULOS PRINCIPALES */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             
-            <div className="flex flex-wrap gap-2">
-              <Tag variant="dark">#Liderazgo</Tag>
-              <Tag variant="glass">#Trabajo en equipo</Tag>
-              <Tag variant="glass">#Resolución</Tag>
-              <Tag variant="dark">#Comunicación</Tag>
-            </div>
+            {/* Módulo 1: Partituras (Destacado) */}
+            <Link href="/partituras" className="group md:col-span-2 lg:col-span-1">
+              <Card className="h-full bg-white/40 backdrop-blur-md shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 rounded-[2rem] overflow-hidden relative border border-primary/40 hover:border-primary/80">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none group-hover:bg-primary/10 transition-colors"></div>
+                <CardContent className="p-8 flex flex-col h-full relative z-10 min-h-[250px] justify-between">
+                  <div>
+                    <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      <Music className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="text-2xl font-black mb-2 text-foreground">Mis Partituras</h3>
+                    <p className="text-sm text-foreground/70 mb-6 font-medium">
+                      Accede a tu repertorio musical, practica en casa y descarga los materiales de tus clases.
+                    </p>
+                  </div>
+                  <div className="flex items-center text-primary font-bold text-sm bg-primary/10 w-fit px-4 py-2 rounded-full backdrop-blur-md">
+                    Explorar Archivos
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Módulo 2: Estudiantes (SOLO ADMINISTRADORES) */}
+            {isAdmin && (
+              <Link href="/tabla" className="group">
+                <Card className="h-full bg-white/30 backdrop-blur-md border border-white/50 shadow-sm hover:shadow-xl hover:border-blue-500/50 hover:bg-white/40 transition-all duration-300 rounded-[2rem]">
+                  <CardContent className="p-8 flex flex-col h-full">
+                    <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      <Users className="w-7 h-7 text-blue-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">Base de Datos</h3>
+                    <p className="text-sm text-foreground/60 mb-6 flex-1 font-medium">
+                      Consulta la tabla general de alumnos, edita expedientes y gestiona el estatus del personal.
+                    </p>
+                    <div className="flex items-center text-blue-600 font-bold text-sm">
+                      Ver Estudiantes
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            )}
+
+            {/* Módulo 3: Inscripciones */}
+            <Link href="/inscripcion_alumno" className="group">
+              <Card className="h-full bg-white/30 backdrop-blur-md border border-white/50 shadow-sm hover:shadow-xl hover:border-purple-500/50 hover:bg-white/40 transition-all duration-300 rounded-[2rem]">
+                <CardContent className="p-8 flex flex-col h-full">
+                  <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <UserPlus className="w-7 h-7 text-purple-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Inscripciones</h3>
+                  <p className="text-sm text-foreground/60 mb-6 flex-1 font-medium">
+                    Registra nuevos estudiantes en el sistema, asigna representantes y actualiza sus datos.
+                  </p>
+                  <div className="flex items-center text-purple-600 font-bold text-sm">
+                    Nuevo Alumno
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
-          {/* Columna 3 */}
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-foreground">Educación</h3>
-              <div className="w-6 h-6 rounded-full border border-black/20 flex items-center justify-center">
-                <ChevronDown className="w-4 h-4 text-foreground" />
-              </div>
-            </div>
+          {/* SECCIÓN DE HISTORIA */}
+          <div className="bg-white/20 backdrop-blur-lg border border-white/40 rounded-[2.5rem] p-8 md:p-12 shadow-sm relative overflow-hidden">
+             <div className="absolute -bottom-10 -right-10 opacity-5 pointer-events-none">
+                <Music className="w-64 h-64" />
+             </div>
 
-            <div className="space-y-4">
-              <div className="bg-[#1a1a1a] text-white rounded-2xl p-5 shadow-lg border border-white/10">
-                <div className="flex justify-between items-start mb-4">
-                  <Tag variant="dark">2026</Tag>
-                  <Award className="w-5 h-5 text-white/50" />
+            <div className="max-w-4xl mx-auto text-center space-y-6 relative z-10">
+              <h2 className="text-3xl font-black text-foreground uppercase tracking-tight">Historia del Sistema Nacional de Orquestas</h2>
+              
+              <div className="flex items-center justify-center mb-8">
+                <div className="w-16 h-px bg-primary/50"></div>
+                <div className="mx-4">
+                  <Star className="text-primary w-5 h-5 fill-primary" />
                 </div>
-                <p className="text-[10px] text-white/60 mb-1">Actual</p>
-                <h4 className="font-bold text-sm leading-tight mb-2">Gestión de Instituciones Culturales</h4>
-                <p className="text-[10px] text-white/50">Universidad Nacional</p>
+                <div className="w-16 h-px bg-primary/50"></div>
               </div>
+              
+              <p className="text-foreground/80 text-lg leading-relaxed font-medium">
+                El Sistema Nacional de Orquestas y Coros Juveniles e Infantiles de Venezuela, 
+                conocido mundialmente como <strong className="text-foreground">&quot;El Sistema&quot;</strong>, es un programa de educación musical fundado 
+                en 1975 por el maestro y músico venezolano José Antonio Abreu.
+              </p>
+              
+              <p className="text-foreground/80 text-base leading-relaxed">
+                Su misión principal ha sido sistematizar la instrucción y la práctica colectiva e individual de la música 
+                a través de orquestas sinfónicas y coros, como instrumentos de organización social y desarrollo humanístico. 
+                Ha demostrado ser un modelo de transformación social, rescatando a millones de niños y jóvenes en situación de vulnerabilidad.
+              </p>
 
-              <div className="bg-[#1a1a1a] text-white rounded-2xl p-5 shadow-lg border border-white/10">
-                <div className="flex justify-between items-start mb-4">
-                  <Tag variant="dark">2020 - 2024</Tag>
-                  <CalendarDays className="w-5 h-5 text-white/50" />
-                </div>
-                <p className="text-[10px] text-white/60 mb-1">Grado</p>
-                <h4 className="font-bold text-sm leading-tight mb-2">Licenciatura en Música</h4>
-                <p className="text-[10px] text-white/50">Conservatorio de Música</p>
-              </div>
+              <blockquote className="italic border-l-4 border-primary pl-6 my-8 text-foreground text-left bg-white/30 p-6 rounded-r-2xl shadow-sm">
+                &quot;La música es un instrumento irremplazable para unir a las personas y expresar los sentimientos más profundos del alma humana.&quot;
+                <footer className="mt-3 text-primary text-sm not-italic font-bold uppercase tracking-widest">— José Antonio Abreu</footer>
+              </blockquote>
+
+              <p className="text-foreground/80 text-base leading-relaxed">
+                Hoy en día, El Sistema es un referente internacional y atiende a cientos de miles de niños y jóvenes, 
+                demostrando que el arte y la cultura son las herramientas más poderosas para la paz y el progreso.
+              </p>
             </div>
           </div>
 
         </div>
-
       </div>
     </div>
   )

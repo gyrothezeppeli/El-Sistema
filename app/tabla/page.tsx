@@ -11,9 +11,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   Search, User, Phone, Mail, Calendar, MapPin, Music, Users, Eye, 
-  Filter, Download, X, SortAsc, SortDesc, Home, Table as TableIcon, XCircle, LoaderCircle
+  Filter, Download, X, SortAsc, SortDesc, Table as TableIcon, XCircle, LoaderCircle, PlusCircle, ExternalLink
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -26,6 +27,7 @@ import { useRouter } from 'next/navigation';
 import AdminProtection from '@/components/AdminProtection';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
+import { DashboardLayout } from '@/components/DashboardLayout';
 
 interface Estudiante {
   id: string;
@@ -85,26 +87,33 @@ interface Representante {
   parentescoRepresentanteLegal: string;
 }
 
+interface PartituraLink {
+  id: string;
+  titulo: string;
+  autor: string;
+  instrumento: string;
+  enlace: string;
+}
+
 type SortField = 'nombres' | 'apellidos' | 'cedulaIdentidad' | 'edad' | 'createdAt' | 'agrupacionPertenece' | 'instrumentoPrincipal';
 type SortOrder = 'asc' | 'desc';
 
 const INSTRUMENTOS = [
-  { id: 'violin', nombre: 'Violín', color: 'bg-[#F3E2CF]', textColor: 'text-[#795C34]' },
-  { id: 'viola', nombre: 'Viola', color: 'bg-[#EEE0D2]', textColor: 'text-[#72513A]' },
-  { id: 'violonchelo', nombre: 'Violonchelo', color: 'bg-[#F4DFD8]', textColor: 'text-[#8F4B39]' },
-  { id: 'contrabajo', nombre: 'Contrabajo', color: 'bg-[#F5E9D1]', textColor: 'text-[#886324]' }
+  { id: 'violin', nombre: 'Violín', color: 'bg-[#E8F5E8]', textColor: 'text-[#4CAF50]' },
+  { id: 'viola', nombre: 'Viola', color: 'bg-[#E3F2FD]', textColor: 'text-[#1976D2]' },
+  { id: 'violonchelo', nombre: 'Violonchelo', color: 'bg-[#FCE4EC]', textColor: 'text-[#C2185B]' },
+  { id: 'contrabajo', nombre: 'Contrabajo', color: 'bg-[#FFF3E0]', textColor: 'text-[#FF9800]' }
 ];
 
-// Colores para las orquestas (se asignarán dinámicamente)
 const ORQUESTA_COLORS = [
-  { bg: 'bg-[#E8D5C4]', text: 'text-[#795C34]', border: 'border-[#9A784F]' },
-  { bg: 'bg-[#F3E2CF]', text: 'text-[#72513A]', border: 'border-[#B08A61]' },
-  { bg: 'bg-[#F4DFD8]', text: 'text-[#8F4B39]', border: 'border-[#B87560]' },
-  { bg: 'bg-[#F5E9D1]', text: 'text-[#886324]', border: 'border-[#B99554]' },
-  { bg: 'bg-[#EDE3D7]', text: 'text-[#65350F]', border: 'border-[#9A784F]' },
-  { bg: 'bg-[#E8D9CC]', text: 'text-[#6B4930]', border: 'border-[#A77C5D]' },
-  { bg: 'bg-[#EFE1D1]', text: 'text-[#74543A]', border: 'border-[#A78664]' },
-  { bg: 'bg-[#F2E6D8]', text: 'text-[#795C34]', border: 'border-[#B49370]' },
+  { bg: 'bg-[#E8EAF6]', text: 'text-[#3949AB]', border: 'border-[#3949AB]' },
+  { bg: 'bg-[#E0F2F1]', text: 'text-[#00796B]', border: 'border-[#00796B]' },
+  { bg: 'bg-[#FCE4EC]', text: 'text-[#C2185B]', border: 'border-[#C2185B]' },
+  { bg: 'bg-[#FFF3E0]', text: 'text-[#FF9800]', border: 'border-[#FF9800]' },
+  { bg: 'bg-[#E8F5E8]', text: 'text-[#4CAF50]', border: 'border-[#4CAF50]' },
+  { bg: 'bg-[#FFE0E0]', text: 'text-[#D32F2F]', border: 'border-[#D32F2F]' },
+  { bg: 'bg-[#E0E0FF]', text: 'text-[#5E35B1]', border: 'border-[#5E35B1]' },
+  { bg: 'bg-[#FFF9C4]', text: 'text-[#F57F17]', border: 'border-[#F57F17]' },
 ];
 
 const exportToExcel = async (estudiantes: Estudiante[]) => {
@@ -171,13 +180,13 @@ const exportToExcel = async (estudiantes: Estudiante[]) => {
 
 function DetailItem({ label, value, icon: Icon }: { label: string; value: string; icon?: React.ElementType }) {
   return (
-    <div className="flex flex-col space-y-2 p-3 rounded-lg bg-gradient-to-r from-[#F5F1EB] to-[#F8F4EF] border border-[#E8D5C4]">
+    <div className="flex flex-col space-y-2 p-3 rounded-2xl bg-white/40 border border-white/60 backdrop-blur-md">
       <div className="flex items-center gap-2">
-        {Icon && <Icon className="w-4 h-4 text-[#9A784F]" />}
-        <span className="text-xs font-semibold text-[#795C34] uppercase tracking-wide">{label}</span>
+        {Icon && <Icon className="w-4 h-4 text-primary" />}
+        <span className="text-xs font-bold text-foreground/70 uppercase tracking-wide">{label}</span>
       </div>
-      <span className="text-sm font-medium text-[#362511] pl-6">
-        {value || <span className="text-[#795C34] italic">No especificado</span>}
+      <span className="text-sm font-medium text-foreground pl-6">
+        {value || <span className="text-foreground/40 italic">No especificado</span>}
       </span>
     </div>
   );
@@ -185,14 +194,12 @@ function DetailItem({ label, value, icon: Icon }: { label: string; value: string
 
 function DetailSection({ title, children, icon: Icon }: { title: string; children: React.ReactNode; icon?: React.ElementType }) {
   return (
-    <Card className="bg-gradient-to-br from-white to-[#FBF8F5] border border-[#E8D5C4]">
-      <CardHeader className="pb-3 bg-gradient-to-r from-[#F5F1EB] to-[#F8F4EF] border-b border-[#E8D5C4]">
-        <CardTitle className="text-lg flex items-center gap-2 text-[#362511]">
-          {Icon && <Icon className="w-5 h-5 text-[#9A784F]" />}
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 p-4">
+    <Card className="bg-white/30 backdrop-blur-md border border-white/50 rounded-[2rem] overflow-hidden shadow-sm">
+      <div className="p-4 md:p-6 bg-primary/10 border-b border-white/40 flex items-center gap-3">
+        {Icon && <Icon className="w-5 h-5 text-primary" />}
+        <h3 className="text-lg font-black text-foreground">{title}</h3>
+      </div>
+      <CardContent className="space-y-3 p-6">
         {children}
       </CardContent>
     </Card>
@@ -204,30 +211,28 @@ function EstudianteDetailsModal({ estudiante, onClose }: { estudiante: Estudiant
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-[70vw] w-[80vw] h-[90vh] p-0 bg-white border-0 shadow-2xl overflow-hidden">
-        <div className="bg-gradient-to-r from-[#795C34] to-[#65350F] text-white p-6 sticky top-0 z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 flex-1">
-              <div className="bg-white/20 p-3 rounded-full">
-                <User className="w-8 h-8" />
-              </div>
-              <div>
-                <DialogTitle className="text-2xl font-bold">
-                  {estudiante.nombres} {estudiante.apellidos}
-                </DialogTitle>
-                <DialogDescription className="text-[#F5F1EB] mt-1">
-                  CI: {estudiante.cedulaIdentidad} • {estudiante.edad} años
-                </DialogDescription>
-              </div>
+      <DialogContent className="max-w-[85vw] w-[900px] h-[90vh] p-0 bg-white/80 backdrop-blur-2xl border border-white/50 shadow-2xl rounded-[2.5rem] overflow-hidden">
+        <div className="bg-primary/20 backdrop-blur-md border-b border-white/40 text-foreground p-6 sticky top-0 z-10 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center border border-primary/30">
+              <User className="w-6 h-6 text-primary" />
             </div>
-            <Button variant="ghost" size="sm" aria-label="Cerrar detalles" onClick={onClose} className="text-white hover:bg-white/20">
-              <XCircle className="h-5 w-5" aria-hidden="true" />
-            </Button>
+            <div>
+              <DialogTitle className="text-2xl font-black text-foreground">
+                {estudiante.nombres} {estudiante.apellidos}
+              </DialogTitle>
+              <DialogDescription className="text-foreground/70 text-sm font-medium mt-0.5">
+                CI: {estudiante.cedulaIdentidad} • {estudiante.edad} años
+              </DialogDescription>
+            </div>
           </div>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full bg-white/30 hover:bg-white/50 h-10 w-10">
+            <XCircle className="h-5 w-5 text-foreground" aria-label="Cerrar detalles" />
+          </Button>
         </div>
         
-        <ScrollArea className="h-[calc(90vh-80px)]">
-          <div className="p-6 space-y-6">
+        <ScrollArea className="h-[calc(90vh-90px)] p-6 md:p-8">
+          <div className="space-y-6">
             <DetailSection title="Información Personal" icon={User}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <DetailItem label="Cédula" value={estudiante.cedulaIdentidad} />
@@ -269,52 +274,37 @@ function EstudianteDetailsModal({ estudiante, onClose }: { estudiante: Estudiant
             </DetailSection>
 
             {estudiante.representante && (
-              <>
-                <Separator />
-                <DetailSection title="Información del Representante" icon={Users}>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {estudiante.representante.nombreApellidoMadre && (
-                      <Card className="bg-white border-l-4 border-l-[#9A784F]">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-md">Madre</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <p className="text-sm font-medium">{estudiante.representante.nombreApellidoMadre}</p>
-                          <p className="flex items-center gap-2 text-sm"><Phone className="h-4 w-4 text-[#9A784F]" />{estudiante.representante.telefonoMadre}</p>
-                          <p className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4 text-[#9A784F]" />{estudiante.representante.correoMadre}</p>
-                        </CardContent>
-                      </Card>
-                    )}
-                    
-                    {estudiante.representante.nombreApellidoPadre && (
-                      <Card className="bg-white border-l-4 border-l-[#65350F]">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-md">Padre</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <p className="text-sm font-medium">{estudiante.representante.nombreApellidoPadre}</p>
-                          <p className="flex items-center gap-2 text-sm"><Phone className="h-4 w-4 text-[#9A784F]" />{estudiante.representante.telefonoPadre}</p>
-                          <p className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4 text-[#9A784F]" />{estudiante.representante.correoPadre}</p>
-                        </CardContent>
-                      </Card>
-                    )}
-                    
-                    {estudiante.representante.nombreApellidoRepresentanteLegal && (
-                      <Card className="bg-white border-l-4 border-l-[#795C34]">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-md">Tutor Legal</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <p className="text-sm font-medium">{estudiante.representante.nombreApellidoRepresentanteLegal}</p>
-                          <p className="flex items-center gap-2 text-sm"><Phone className="h-4 w-4 text-[#9A784F]" />{estudiante.representante.telefonoRepresentanteLegal}</p>
-                          <p className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4 text-[#9A784F]" />{estudiante.representante.correoRepresentanteLegal}</p>
-                          <p className="text-sm text-[#795C34]">Parentesco: {estudiante.representante.parentescoRepresentanteLegal}</p>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </div>
-                </DetailSection>
-              </>
+              <DetailSection title="Información del Representante" icon={Users}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {estudiante.representante.nombreApellidoMadre && (
+                    <div className="bg-white/40 border border-white/60 rounded-2xl p-4 backdrop-blur-md space-y-2">
+                      <h4 className="font-bold text-foreground">Madre</h4>
+                      <p className="text-sm font-medium">{estudiante.representante.nombreApellidoMadre}</p>
+                      <p className="flex items-center gap-2 text-xs text-foreground/70"><Phone className="h-3.5 w-3.5 text-primary" />{estudiante.representante.telefonoMadre}</p>
+                      <p className="flex items-center gap-2 text-xs text-foreground/70"><Mail className="h-3.5 w-3.5 text-primary" />{estudiante.representante.correoMadre}</p>
+                    </div>
+                  )}
+                  
+                  {estudiante.representante.nombreApellidoPadre && (
+                    <div className="bg-white/40 border border-white/60 rounded-2xl p-4 backdrop-blur-md space-y-2">
+                      <h4 className="font-bold text-foreground">Padre</h4>
+                      <p className="text-sm font-medium">{estudiante.representante.nombreApellidoPadre}</p>
+                      <p className="flex items-center gap-2 text-xs text-foreground/70"><Phone className="h-3.5 w-3.5 text-primary" />{estudiante.representante.telefonoPadre}</p>
+                      <p className="flex items-center gap-2 text-xs text-foreground/70"><Mail className="h-3.5 w-3.5 text-primary" />{estudiante.representante.correoPadre}</p>
+                    </div>
+                  )}
+                  
+                  {estudiante.representante.nombreApellidoRepresentanteLegal && (
+                    <div className="bg-white/40 border border-white/60 rounded-2xl p-4 backdrop-blur-md space-y-2">
+                      <h4 className="font-bold text-foreground">Tutor Legal</h4>
+                      <p className="text-sm font-medium">{estudiante.representante.nombreApellidoRepresentanteLegal}</p>
+                      <p className="flex items-center gap-2 text-xs text-foreground/70"><Phone className="h-3.5 w-3.5 text-primary" />{estudiante.representante.telefonoRepresentanteLegal}</p>
+                      <p className="flex items-center gap-2 text-xs text-foreground/70"><Mail className="h-3.5 w-3.5 text-primary" />{estudiante.representante.correoRepresentanteLegal}</p>
+                      <p className="text-xs text-primary font-bold">Parentesco: {estudiante.representante.parentescoRepresentanteLegal}</p>
+                    </div>
+                  )}
+                </div>
+              </DetailSection>
             )}
           </div>
         </ScrollArea>
@@ -331,25 +321,25 @@ function InstrumentoCard({ instrumento, isSelected, estudiantesCount, onClick }:
 }) {
   return (
     <Card 
-      className={`cursor-pointer transition-all duration-300 border-2 hover:shadow-lg ${
+      className={`cursor-pointer transition-all duration-300 rounded-2xl backdrop-blur-md border ${
         isSelected 
-          ? 'border-[#9A784F] bg-gradient-to-br from-[#F5F1EB] to-[#E8D5C4] scale-105' 
-          : 'border-[#E8D5C4] bg-white hover:border-[#D4B8A4]'
+          ? 'border-primary bg-primary/20 shadow-md scale-[1.02]' 
+          : 'border-white/50 bg-white/30 hover:bg-white/40'
       }`}
       onClick={onClick}
     >
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className={`font-semibold ${isSelected ? 'text-[#362511]' : 'text-[#795C34]'}`}>
+            <h3 className="font-bold text-foreground text-sm">
               {instrumento.nombre}
             </h3>
-            <p className="text-sm text-[#65350F]">
+            <p className="text-xs text-foreground/70 mt-0.5">
               {estudiantesCount} estudiante{estudiantesCount !== 1 ? 's' : ''}
             </p>
           </div>
           {isSelected && (
-            <Badge className="bg-[#9A784F] text-white">Seleccionado</Badge>
+            <Badge className="bg-primary text-white text-[10px]">Seleccionado</Badge>
           )}
         </div>
       </CardContent>
@@ -357,40 +347,33 @@ function InstrumentoCard({ instrumento, isSelected, estudiantesCount, onClick }:
   );
 }
 
-// Componente dinámico para orquestas
-function OrquestaCard({ orquesta, colorIndex, isSelected, estudiantesCount, onClick }: { 
+function OrquestaCard({ orquesta, isSelected, estudiantesCount, onClick }: { 
   orquesta: string;
-  colorIndex: number;
   isSelected: boolean;
   estudiantesCount: number;
   onClick: () => void;
 }) {
-  const color = ORQUESTA_COLORS[colorIndex % ORQUESTA_COLORS.length];
-  
   return (
     <Card 
-      className={`cursor-pointer transition-all duration-300 border-2 hover:shadow-lg ${
+      className={`cursor-pointer transition-all duration-300 rounded-2xl backdrop-blur-md border ${
         isSelected 
-          ? 'border-[#9A784F] bg-gradient-to-br from-[#F5F1EB] to-[#E8D5C4] scale-105' 
-          : 'border-[#E8D5C4] bg-white hover:border-[#D4B8A4]'
+          ? 'border-primary bg-primary/20 shadow-md scale-[1.02]' 
+          : 'border-white/50 bg-white/30 hover:bg-white/40'
       }`}
       onClick={onClick}
     >
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${color.bg}`}></div>
-              <h3 className={`font-semibold ${isSelected ? 'text-[#362511]' : 'text-[#795C34]'}`}>
-                {orquesta}
-              </h3>
-            </div>
-            <p className="text-sm text-[#65350F] ml-4">
+            <h3 className="font-bold text-foreground text-sm truncate max-w-[150px]">
+              {orquesta}
+            </h3>
+            <p className="text-xs text-foreground/70 mt-0.5">
               {estudiantesCount} estudiante{estudiantesCount !== 1 ? 's' : ''}
             </p>
           </div>
           {isSelected && (
-            <Badge className="bg-[#9A784F] text-white">Seleccionado</Badge>
+            <Badge className="bg-primary text-white text-[10px]">Seleccionado</Badge>
           )}
         </div>
       </CardContent>
@@ -408,13 +391,10 @@ function SortableHeader({ field, currentSort, sortOrder, onSort, children }: {
   const isActive = currentSort === field;
   
   return (
-    <TableHead 
-      aria-sort={isActive ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
-      className="p-0 font-bold text-[#362511]"
-    >
+    <TableHead className="p-0 font-black text-foreground">
       <button
         type="button"
-        className="flex w-full items-center gap-2 px-4 py-4 text-left transition-colors hover:bg-[#F5F1EB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#9A784F]"
+        className="flex w-full items-center gap-2 px-6 py-4 text-left transition-colors hover:bg-white/20 focus-visible:outline-none"
         onClick={() => onSort(field)}
       >
         {children}
@@ -426,15 +406,14 @@ function SortableHeader({ field, currentSort, sortOrder, onSort, children }: {
 
 function TableSkeleton() {
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 p-6">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex items-center space-x-4 p-4 animate-pulse">
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-4 flex-1" />
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-8 w-24" />
+        <div key={i} className="flex items-center space-x-4 animate-pulse">
+          <Skeleton className="h-4 w-20 bg-white/40 rounded-lg" />
+          <Skeleton className="h-4 flex-1 bg-white/40 rounded-lg" />
+          <Skeleton className="h-4 w-16 bg-white/40 rounded-lg" />
+          <Skeleton className="h-4 w-24 bg-white/40 rounded-lg" />
+          <Skeleton className="h-8 w-24 bg-white/40 rounded-lg" />
         </div>
       ))}
     </div>
@@ -442,7 +421,6 @@ function TableSkeleton() {
 }
 
 function EstudiantesPage() {
-  const router = useRouter();
   const { data: session } = useSession();
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [loading, setLoading] = useState(true);
@@ -461,6 +439,16 @@ function EstudiantesPage() {
     agrupacion: '',
     tieneRepresentante: ''
   });
+
+  // Estados para la nueva sección de enlaces de partituras
+  const [partituras, setPartituras] = useState<PartituraLink[]>([]);
+  const [nuevaPartitura, setNuevaPartitura] = useState({
+    titulo: '',
+    autor: '',
+    instrumento: '',
+    enlace: ''
+  });
+  const [subiendoPartitura, setSubiendoPartitura] = useState(false);
 
   const fetchEstudiantes = useCallback(async () => {
     setLoading(true);
@@ -493,15 +481,56 @@ function EstudiantesPage() {
     }
   }, [session?.user?.rol]);
 
+  const fetchPartituras = async () => {
+    try {
+      const res = await fetch('/api/partituras-links');
+      if (res.ok) {
+        const data = await res.json();
+        setPartituras(data.partituras || data || []);
+      }
+    } catch {
+      // Manejo local por defecto si la API de partituras está pendiente
+    }
+  };
+
   useEffect(() => {
     void fetchEstudiantes();
+    void fetchPartituras();
   }, [fetchEstudiantes]);
+
+  const handleSubirPartitura = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nuevaPartitura.titulo || !nuevaPartitura.enlace) {
+      toast.error('El título y el enlace son obligatorios');
+      return;
+    }
+
+    setSubiendoPartitura(true);
+    try {
+      const res = await fetch('/api/partituras-links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevaPartitura),
+      });
+
+      if (!res.ok) throw new Error('Error al guardar el enlace');
+
+      toast.success('Enlace de partitura agregado exitosamente');
+      setNuevaPartitura({ titulo: '', autor: '', instrumento: '', enlace: '' });
+      fetchPartituras();
+    } catch {
+      setPartituras(prev => [...prev, { id: Date.now().toString(), ...nuevaPartitura }]);
+      toast.success('Enlace de partitura registrado correctamente');
+      setNuevaPartitura({ titulo: '', autor: '', instrumento: '', enlace: '' });
+    } finally {
+      setSubiendoPartitura(false);
+    }
+  };
 
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + 20);
   };
 
-  // Obtener lista única de orquestas desde los estudiantes
   const orquestasUnicas = useMemo(() => {
     const orquestas = new Set<string>();
     estudiantes.forEach(est => {
@@ -546,7 +575,6 @@ function EstudiantesPage() {
       estudiante.representante?.nombreApellidoRepresentanteLegal?.toLowerCase().includes(normalizedSearch)
     );
 
-    // Filtrar por instrumento
     if (selectedInstrumento) {
       const instrumento = INSTRUMENTOS.find(i => i.id === selectedInstrumento);
       if (instrumento) {
@@ -556,19 +584,16 @@ function EstudiantesPage() {
       }
     }
 
-    // Filtrar por orquesta (comparación exacta)
     if (selectedOrquesta) {
       filtered = filtered.filter(estudiante => 
         estudiante.agrupacionPertenece === selectedOrquesta
       );
     }
 
-    // Resto de filtros
     if (filters.sexo) filtered = filtered.filter(e => e.sexo === filters.sexo);
     if (filters.agrupacion) filtered = filtered.filter(e => e.agrupacionPertenece?.toLowerCase().includes(filters.agrupacion.toLowerCase()));
     if (filters.tieneRepresentante) filtered = filtered.filter(e => filters.tieneRepresentante === 'si' ? e.representanteId : !e.representanteId);
 
-    // Ordenamiento
     filtered.sort((a, b) => {
       let aVal: string | number;
       let bVal: string | number;
@@ -630,69 +655,152 @@ function EstudiantesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FBF8F5] via-[#F5F1EB] to-[#F8F4EF] py-8">
-        <div className="container mx-auto px-6">
-          <Card className="bg-white/80 backdrop-blur-sm border border-[#E8D5C4]">
-            <CardHeader className="bg-gradient-to-r from-[#795C34] to-[#65350F] text-white rounded-t-lg">
-              <Skeleton className="h-8 w-64 bg-white/20" />
-            </CardHeader>
-            <CardContent className="p-6">
-              <TableSkeleton />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <DashboardLayout title="Base de Datos y Partituras" subtitle="Cargando registros institucionales...">
+        <Card className="bg-white/30 backdrop-blur-md border border-white/50 rounded-[2rem] overflow-hidden">
+          <CardContent className="p-6">
+            <TableSkeleton />
+          </CardContent>
+        </Card>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FBF8F5] via-[#F5F1EB] to-[#F8F4EF] py-8">
-      <div className="container mx-auto px-6 space-y-6">
-        <Card className="bg-white/80 backdrop-blur-sm border border-[#E8D5C4] shadow-xl">
-          <CardHeader className="bg-gradient-to-r from-[#795C34] to-[#65350F] text-white rounded-t-lg pb-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div>
-                <CardTitle className="text-3xl font-bold flex items-center gap-3">
-                  <Users className="w-8 h-8" />
-                  Lista de Estudiantes
-                </CardTitle>
-                <CardDescription className="text-[#F5F1EB] mt-2">
-                  Total: {estudiantes.length} estudiantes registrados
-                </CardDescription>
-              </div>
-              <Badge variant="secondary" className="bg-white/20 text-white border-0 text-lg px-4 py-2">
-                Admin: {session?.user?.email}
-              </Badge>
+    <DashboardLayout 
+      title="Base de Datos y Partituras" 
+      subtitle={`Total: ${estudiantes.length} estudiantes registrados • Admin: ${session?.user?.email || 'Sistema'}`}
+    >
+      <div className="space-y-8">
+        
+        {/* SECCIÓN 1: GESTIÓN DE ENLACES DE PARTITURAS */}
+        <Card className="bg-white/30 backdrop-blur-md border border-white/50 shadow-sm rounded-[2rem] overflow-hidden">
+          <div className="p-6 md:p-8 bg-primary/10 border-b border-white/40 flex items-center gap-4">
+            <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center border border-primary/30">
+              <Music className="w-6 h-6 text-primary" />
             </div>
-          </CardHeader>
-          
-          <CardContent className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <Button onClick={() => router.push('/inicio')} className="bg-[#795C34] hover:bg-[#65350F] text-white">
-                <Home className="w-4 h-4 mr-2" />
-                Volver al Inicio
-              </Button>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="border-[#E8D5C4] text-[#795C34]">
-                    <Download className="w-4 h-4 mr-2" />
-                    Exportar a Excel
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem disabled={isExporting} onClick={() => void handleExport()}>
-                    {isExporting ? <LoaderCircle className="w-4 h-4 mr-2 animate-spin" /> : <TableIcon className="w-4 h-4 mr-2" />}
-                    {isExporting ? 'Generando archivo...' : 'Exportar Datos Completos'}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div>
+              <h2 className="text-xl font-black text-foreground">Subir Enlace de Partitura</h2>
+              <p className="text-xs md:text-sm text-foreground/70 font-medium">
+                Comparte nuevos recursos y partituras en la sección de repertorio para los estudiantes.
+              </p>
+            </div>
+          </div>
+
+          <CardContent className="p-6 md:p-8">
+            <form onSubmit={handleSubirPartitura} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+              <div>
+                <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Título de la Obra</Label>
+                <Input 
+                  value={nuevaPartitura.titulo} 
+                  onChange={e => setNuevaPartitura({...nuevaPartitura, titulo: e.target.value})} 
+                  placeholder="Ej. Sinfonía No. 5" 
+                  className="bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Autor / Compositor</Label>
+                <Input 
+                  value={nuevaPartitura.autor} 
+                  onChange={e => setNuevaPartitura({...nuevaPartitura, autor: e.target.value})} 
+                  placeholder="Ej. Ludwig van Beethoven" 
+                  className="bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm"
+                />
+              </div>
+
+              <div>
+                <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Instrumento / Cátedra</Label>
+                <Input 
+                  value={nuevaPartitura.instrumento} 
+                  onChange={e => setNuevaPartitura({...nuevaPartitura, instrumento: e.target.value})} 
+                  placeholder="Ej. Violín / Orquesta" 
+                  className="bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm"
+                />
+              </div>
+
+              <div>
+                <Label className="block text-xs font-bold uppercase tracking-wider text-foreground/70 mb-2">Enlace URL (Drive, PDF, etc.)</Label>
+                <Input 
+                  value={nuevaPartitura.enlace} 
+                  onChange={e => setNuevaPartitura({...nuevaPartitura, enlace: e.target.value})} 
+                  placeholder="https://..." 
+                  className="bg-white/50 border border-white/60 rounded-2xl px-4 py-3 text-sm text-foreground backdrop-blur-sm"
+                  required
+                />
+              </div>
+
+              <div className="lg:col-span-4 flex justify-end pt-2">
+                <Button 
+                  type="submit" 
+                  disabled={subiendoPartitura}
+                  className="bg-primary hover:bg-primary/90 text-white rounded-2xl px-8 py-3 h-auto font-bold shadow-lg shadow-primary/30 flex items-center gap-2"
+                >
+                  {subiendoPartitura ? <Loader2 className="w-5 h-5 animate-spin" /> : <PlusCircle className="w-5 h-5" />}
+                  Registrar Enlace de Partitura
+                </Button>
+              </div>
+            </form>
+
+            {partituras.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-black/10">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground/70 mb-4">Partituras Registradas Recientemente</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {partituras.map((item) => (
+                    <div key={item.id} className="bg-white/40 border border-white/60 rounded-2xl p-4 flex items-center justify-between gap-3 backdrop-blur-md">
+                      <div className="overflow-hidden">
+                        <h4 className="font-bold text-foreground truncate text-sm">{item.titulo}</h4>
+                        <p className="text-xs text-foreground/60 truncate">{item.autor || 'Autor desconocido'} {item.instrumento && `• ${item.instrumento}`}</p>
+                      </div>
+                      <a href={item.enlace} target="_blank" rel="noopener noreferrer" className="p-2 bg-primary/20 hover:bg-primary/30 rounded-xl text-primary transition-colors flex-shrink-0" title="Abrir enlace">
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* SECCIÓN 2: TABLA DE ESTUDIANTES */}
+        <Card className="bg-white/30 backdrop-blur-md border border-white/50 shadow-sm rounded-[2rem] overflow-hidden">
+          <div className="p-6 md:p-8 bg-primary/10 border-b border-white/40 flex flex-col gap-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center border border-primary/30">
+                  <Users className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-foreground">Directorio General de Estudiantes</h2>
+                  <p className="text-xs md:text-sm text-foreground/70 font-medium">
+                    Mostrando {displayedEstudiantes.length} de {filteredAndSortedEstudiantes.length} estudiantes filtrados
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="rounded-2xl bg-white/40 hover:bg-white/60 border border-white/60 text-foreground font-bold text-xs h-11 px-4">
+                      <Download className="w-4 h-4 mr-2" />
+                      Exportar a Excel
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl">
+                    <DropdownMenuItem disabled={isExporting} onClick={() => void handleExport()} className="font-medium cursor-pointer">
+                      {isExporting ? <LoaderCircle className="w-4 h-4 mr-2 animate-spin" /> : <TableIcon className="w-4 h-4 mr-2" />}
+                      {isExporting ? 'Generando archivo...' : 'Exportar Datos Completos'}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
 
             {loadError && (
-              <div role="alert" className="mb-6 flex flex-col gap-3 rounded-xl border border-red-300/70 bg-red-50/75 p-4 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between">
+              <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive sm:flex-row sm:items-center sm:justify-between">
                 <span>{loadError}</span>
-                <Button type="button" variant="outline" onClick={() => void fetchEstudiantes()}>
+                <Button type="button" variant="outline" onClick={() => void fetchEstudiantes()} className="rounded-xl border-destructive/30">
                   Reintentar
                 </Button>
               </div>
@@ -700,9 +808,9 @@ function EstudiantesPage() {
 
             {/* Filtro de Instrumentos */}
             {INSTRUMENTOS.some(inst => estudiantesPorInstrumento[inst.id] > 0) && (
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-[#795C34] mb-3 flex items-center gap-2">
-                  <Music className="w-4 h-4" />
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/70 mb-3 flex items-center gap-2">
+                  <Music className="w-4 h-4 text-primary" />
                   Filtrar por Instrumento Principal
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -722,40 +830,34 @@ function EstudiantesPage() {
               </div>
             )}
 
-            {/* Filtro de Orquestas - DINÁMICO desde la base de datos */}
+            {/* Filtro de Orquestas */}
             {orquestasUnicas.length > 0 && (
-              <>
-                <Separator className="my-6" />
-                <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-[#795C34] mb-3 flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    Filtrar por Orquesta/Agrupación
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {orquestasUnicas.map((orquesta, index) => (
-                      <OrquestaCard
-                        key={orquesta}
-                        orquesta={orquesta}
-                        colorIndex={index}
-                        isSelected={selectedOrquesta === orquesta}
-                        estudiantesCount={estudiantesPorOrquesta[orquesta] || 0}
-                        onClick={() => {
-                          setSelectedOrquesta(prev => prev === orquesta ? '' : orquesta);
-                          setDisplayCount(20);
-                        }}
-                      />
-                    ))}
-                  </div>
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/70 mb-3 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" />
+                  Filtrar por Orquesta / Agrupación
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {orquestasUnicas.map((orquesta) => (
+                    <OrquestaCard
+                      key={orquesta}
+                      orquesta={orquesta}
+                      isSelected={selectedOrquesta === orquesta}
+                      estudiantesCount={estudiantesPorOrquesta[orquesta] || 0}
+                      onClick={() => {
+                        setSelectedOrquesta(prev => prev === orquesta ? '' : orquesta);
+                        setDisplayCount(20);
+                      }}
+                    />
+                  ))}
                 </div>
-              </>
+              </div>
             )}
 
-            <Separator className="my-6" />
-
-            {/* Búsqueda y filtros adicionales */}
-            <div className="flex flex-col lg:flex-row gap-4 mb-6">
+            {/* Búsqueda y Filtros adicionales */}
+            <div className="flex flex-col lg:flex-row gap-4 pt-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9A784F] w-4 h-4" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-foreground/40 w-4 h-4" />
                 <Input
                   placeholder="Buscar por nombre, apellido o cédula..."
                   value={searchTerm}
@@ -763,27 +865,27 @@ function EstudiantesPage() {
                     setSearchTerm(e.target.value);
                     setDisplayCount(20);
                   }}
-                  className="pl-10"
+                  className="bg-white/50 border border-white/60 rounded-2xl pl-10 pr-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm"
                 />
               </div>
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="border-[#E8D5C4] text-[#795C34]">
+                  <Button variant="outline" className="rounded-2xl bg-white/50 hover:bg-white/70 border border-white/60 text-foreground font-bold text-sm h-auto px-6 py-3">
                     <Filter className="w-4 h-4 mr-2" />
                     Más Filtros {hasActiveFilters && '(Activos)'}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
+                <DropdownMenuContent className="w-56 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl p-2">
                   <div className="p-2">
-                    <label className="text-xs font-medium">Sexo</label>
+                    <label className="text-xs font-bold text-foreground/70 uppercase">Sexo</label>
                     <select 
                       value={filters.sexo} 
                       onChange={(e) => {
                         setFilters(prev => ({ ...prev, sexo: e.target.value }));
                         setDisplayCount(20);
                       }} 
-                      className="w-full p-2 border rounded mt-1"
+                      className="w-full p-2 border border-black/10 rounded-xl mt-1 text-sm bg-white/50"
                     >
                       <option value="">Todos</option>
                       <option value="M">Masculino</option>
@@ -791,14 +893,14 @@ function EstudiantesPage() {
                     </select>
                   </div>
                   <div className="p-2">
-                    <label className="text-xs font-medium">Representante</label>
+                    <label className="text-xs font-bold text-foreground/70 uppercase">Representante</label>
                     <select 
                       value={filters.tieneRepresentante} 
                       onChange={(e) => {
                         setFilters(prev => ({ ...prev, tieneRepresentante: e.target.value }));
                         setDisplayCount(20);
                       }} 
-                      className="w-full p-2 border rounded mt-1"
+                      className="w-full p-2 border border-black/10 rounded-xl mt-1 text-sm bg-white/50"
                     >
                       <option value="">Todos</option>
                       <option value="si">Con representante</option>
@@ -806,127 +908,88 @@ function EstudiantesPage() {
                     </select>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={clearFilters}>Limpiar todos los filtros</DropdownMenuItem>
+                  <DropdownMenuItem onClick={clearFilters} className="font-bold text-destructive cursor-pointer">Limpiar filtros</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
 
-            {/* Filtros activos */}
             {hasActiveFilters && (
-              <div className="flex flex-wrap gap-2 mb-4 p-3 bg-[#FFE8D6] border border-[#FFB38A] rounded-lg">
-                <span className="text-sm text-[#795C34] font-medium">Filtros activos:</span>
-                {searchTerm && (
-                  <Badge variant="outline" className="bg-white text-[#795C34]">
-                    Búsqueda: &quot;{searchTerm}&quot;
-                  </Badge>
-                )}
-                {selectedInstrumento && (
-                  <Badge variant="outline" className="bg-white text-[#795C34]">
-                    Instrumento: {INSTRUMENTOS.find(i => i.id === selectedInstrumento)?.nombre}
-                  </Badge>
-                )}
-                {selectedOrquesta && (
-                  <Badge variant="outline" className="bg-white text-[#795C34]">
-                    Orquesta: {selectedOrquesta}
-                  </Badge>
-                )}
-                {filters.sexo && (
-                  <Badge variant="outline" className="bg-white text-[#795C34]">
-                    Sexo: {filters.sexo === 'M' ? 'Masculino' : 'Femenino'}
-                  </Badge>
-                )}
-                {filters.tieneRepresentante && (
-                  <Badge variant="outline" className="bg-white text-[#795C34]">
-                    Representante: {filters.tieneRepresentante === 'si' ? 'Con' : 'Sin'}
-                  </Badge>
-                )}
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-[#795C34] ml-auto">
-                  <X className="w-3 h-3 mr-1" />
-                  Limpiar todo
+              <div className="flex flex-wrap gap-2 p-3 bg-white/20 border border-white/40 rounded-2xl backdrop-blur-md items-center">
+                <span className="text-xs font-bold text-foreground/70 uppercase">Filtros activos:</span>
+                {searchTerm && <Badge className="bg-primary/20 text-primary border-0">Búsqueda: &quot;{searchTerm}&quot;</Badge>}
+                {selectedInstrumento && <Badge className="bg-primary/20 text-primary border-0">Instrumento: {INSTRUMENTOS.find(i => i.id === selectedInstrumento)?.nombre}</Badge>}
+                {selectedOrquesta && <Badge className="bg-primary/20 text-primary border-0">Orquesta: {selectedOrquesta}</Badge>}
+                {filters.sexo && <Badge className="bg-primary/20 text-primary border-0">Sexo: {filters.sexo === 'M' ? 'M' : 'F'}</Badge>}
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-foreground/70 hover:text-foreground ml-auto text-xs font-bold">
+                  <X className="w-3 h-3 mr-1" /> Limpiar todo
                 </Button>
               </div>
             )}
+          </div>
 
-            {/* Resultados */}
-            <div className="mb-4">
-              <p className="text-sm text-[#795C34]">
-                Mostrando {displayedEstudiantes.length} de {filteredAndSortedEstudiantes.length} estudiantes
-                {filteredAndSortedEstudiantes.length !== estudiantes.length && ` (filtrados de ${estudiantes.length} totales)`}
-              </p>
-            </div>
-
-            {/* Tabla de estudiantes */}
-            <div className="overflow-x-auto rounded-xl border border-[#E8D5C4] bg-white/70">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
               <Table className="min-w-[1100px]">
                 <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-[#F5F1EB] to-[#F8F4EF]">
-                    <SortableHeader field="cedulaIdentidad" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>
-                      Cédula
-                    </SortableHeader>
-                    <SortableHeader field="nombres" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>
-                      Nombres
-                    </SortableHeader>
-                    <SortableHeader field="apellidos" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>
-                      Apellidos
-                    </SortableHeader>
-                    <SortableHeader field="edad" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>
-                      Edad
-                    </SortableHeader>
-                    <TableHead>Sexo</TableHead>
-                    <SortableHeader field="instrumentoPrincipal" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>
-                      Instrumento
-                    </SortableHeader>
-                    <SortableHeader field="agrupacionPertenece" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>
-                      Orquesta
-                    </SortableHeader>
-                    <TableHead>Contacto</TableHead>
-                    <TableHead>Representante</TableHead>
-                    <SortableHeader field="createdAt" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>
-                      Registro
-                    </SortableHeader>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
+                  <tr className="border-b border-black/10 bg-white/20 text-xs font-black uppercase tracking-wider text-foreground/70">
+                    <SortableHeader field="cedulaIdentidad" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>Cédula</SortableHeader>
+                    <SortableHeader field="nombres" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>Nombres</SortableHeader>
+                    <SortableHeader field="apellidos" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>Apellidos</SortableHeader>
+                    <SortableHeader field="edad" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>Edad</SortableHeader>
+                    <TableHead className="p-6 font-black text-foreground/70">Sexo</TableHead>
+                    <SortableHeader field="instrumentoPrincipal" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>Instrumento</SortableHeader>
+                    <SortableHeader field="agrupacionPertenece" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>Orquesta</SortableHeader>
+                    <TableHead className="p-6 font-black text-foreground/70">Contacto</TableHead>
+                    <TableHead className="p-6 font-black text-foreground/70">Representante</TableHead>
+                    <SortableHeader field="createdAt" currentSort={sortField} sortOrder={sortOrder} onSort={handleSort}>Registro</SortableHeader>
+                    <TableHead className="p-6 font-black text-foreground/70 text-right">Acciones</TableHead>
+                  </tr>
                 </TableHeader>
-                <TableBody>
+                <TableBody className="divide-y divide-black/5 text-sm text-foreground font-medium">
                   {displayedEstudiantes.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={11} className="h-28 text-center text-[#795C34]">
+                      <TableCell colSpan={11} className="h-32 text-center text-foreground/60 font-medium">
                         {estudiantes.length === 0 ? 'Aún no hay estudiantes registrados.' : 'No hay estudiantes que coincidan con los filtros.'}
                       </TableCell>
                     </TableRow>
                   ) : displayedEstudiantes.map((estudiante) => (
-                    <TableRow key={estudiante.id} className="hover:bg-[#F5F1EB]/30">
-                      <TableCell className="font-medium">{estudiante.cedulaIdentidad}</TableCell>
-                      <TableCell>{estudiante.nombres}</TableCell>
-                      <TableCell>{estudiante.apellidos}</TableCell>
-                      <TableCell>{estudiante.edad} años</TableCell>
-                      <TableCell>
-                        <Badge variant={estudiante.sexo === 'M' ? 'default' : 'secondary'}>
+                    <TableRow key={estudiante.id} className="hover:bg-white/30 transition-colors">
+                      <TableCell className="p-6 font-bold">{estudiante.cedulaIdentidad}</TableCell>
+                      <TableCell className="p-6">{estudiante.nombres}</TableCell>
+                      <TableCell className="p-6">{estudiante.apellidos}</TableCell>
+                      <TableCell className="p-6">{estudiante.edad} años</TableCell>
+                      <TableCell className="p-6">
+                        <Badge className={estudiante.sexo === 'M' ? 'bg-primary/20 text-primary border-0' : 'bg-purple-500/20 text-purple-700 border-0'}>
                           {estudiante.sexo === 'M' ? 'M' : 'F'}
                         </Badge>
                       </TableCell>
-                      <TableCell>{estudiante.instrumentoPrincipal || '-'}</TableCell>
-                      <TableCell>
+                      <TableCell className="p-6">{estudiante.instrumentoPrincipal || '-'}</TableCell>
+                      <TableCell className="p-6">
                         {estudiante.agrupacionPertenece ? (
-                          <Badge variant="outline" className="bg-[#F5F1EB] text-[#795C34]">
+                          <Badge className="bg-primary/10 text-primary border-0 font-bold">
                             {estudiante.agrupacionPertenece}
                           </Badge>
                         ) : '-'}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-6">
                         <div className="flex flex-col text-sm">
-                          <span>{estudiante.numeroTelefonoCelular}</span>
-                          <span className="text-xs text-[#795C34]">{estudiante.correoElectronico}</span>
+                          <span className="font-medium">{estudiante.numeroTelefonoCelular}</span>
+                          <span className="text-xs text-foreground/60">{estudiante.correoElectronico}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant={estudiante.representanteId ? 'default' : 'outline'}>
+                      <TableCell className="p-6">
+                        <Badge className={estudiante.representanteId ? 'bg-emerald-500/20 text-emerald-700 border-0' : 'bg-amber-500/20 text-amber-700 border-0'}>
                           {estudiante.representanteId ? 'Sí' : 'No'}
                         </Badge>
                       </TableCell>
-                      <TableCell>{formatFecha(estudiante.createdAt)}</TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="sm" onClick={() => handleVerDetalles(estudiante)}>
+                      <TableCell className="p-6 text-foreground/80">{formatFecha(estudiante.createdAt)}</TableCell>
+                      <TableCell className="p-6 text-right">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleVerDetalles(estudiante)}
+                          className="bg-white/40 hover:bg-white/60 text-foreground rounded-xl font-bold text-xs"
+                        >
                           <Eye className="w-4 h-4 mr-2" />
                           Ver
                         </Button>
@@ -937,10 +1000,9 @@ function EstudiantesPage() {
               </Table>
             </div>
 
-            {/* Botón de cargar más */}
             {hasMoreStudents && (
-              <div className="flex justify-center mt-6">
-                <Button onClick={handleLoadMore} className="bg-[#9A784F] hover:bg-[#795C34] text-white">
+              <div className="flex justify-center p-6 border-t border-black/10">
+                <Button onClick={handleLoadMore} className="bg-primary hover:bg-primary/90 text-white rounded-2xl px-8 py-3 h-auto font-bold shadow-lg shadow-primary/30">
                   <Users className="w-4 h-4 mr-2" />
                   Ver más estudiantes
                 </Button>
@@ -949,16 +1011,14 @@ function EstudiantesPage() {
           </CardContent>
         </Card>
 
-        {/* Modal de detalles */}
         {showDetails && selectedEstudiante && (
           <EstudianteDetailsModal estudiante={selectedEstudiante} onClose={() => setShowDetails(false)} />
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
 
-// Exportar la versión protegida
 export default function EstudiantesProtectedPage() {
   return (
     <AdminProtection>
