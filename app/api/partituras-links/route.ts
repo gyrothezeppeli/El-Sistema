@@ -9,7 +9,7 @@ export async function GET() {
     });
     return NextResponse.json({ partituras }, { status: 200 });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Error desconocido al obtener partituras';
+    const errorMessage = error instanceof Error ? error.message : 'Error al obtener las partituras';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
@@ -39,8 +39,27 @@ export async function POST(request: Request) {
     }, { status: 201 });
     
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Error desconocido al guardar en la base de datos';
-    // Esto enviará el error exacto a la respuesta para que lo veas al hacer la petición
+    const errorMessage = error instanceof Error ? error.message : 'Error al guardar la partitura';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'El ID es obligatorio para eliminar' }, { status: 400 });
+    }
+
+    await prismadb.partituraLink.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true, message: 'Partitura eliminada exitosamente' }, { status: 200 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Error al eliminar la partitura';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

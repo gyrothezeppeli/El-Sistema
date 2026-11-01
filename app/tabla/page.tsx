@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Search, User, Phone, Mail, Calendar, MapPin, Music, Users, Eye, 
-  Filter, Download, X, SortAsc, SortDesc, Table as TableIcon, XCircle, LoaderCircle, Loader2, PlusCircle, ExternalLink
+  Filter, Download, X, SortAsc, SortDesc, Table as TableIcon, XCircle, LoaderCircle, Loader2, PlusCircle, ExternalLink, Trash2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -531,6 +531,24 @@ function EstudiantesPage() {
     }
   };
 
+  const handleEliminarPartitura = async (id: string) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar este enlace de partitura?')) return;
+
+    try {
+      const res = await fetch(`/api/partituras-links?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) throw new Error('No se pudo eliminar el enlace');
+
+      toast.success('Partitura eliminada correctamente');
+      fetchPartituras();
+    } catch (error) {
+      console.error(error);
+      toast.error('Error al intentar eliminar la partitura');
+    }
+  };
+
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + 20);
   };
@@ -756,15 +774,25 @@ function EstudiantesPage() {
                         <h4 className="font-bold text-foreground truncate text-sm">{item.titulo}</h4>
                         <p className="text-xs text-foreground/60 truncate">{item.autor || 'Autor desconocido'} {item.instrumento && `• ${item.instrumento}`}</p>
                       </div>
-                      <a 
-                        href={formatearEnlace(item.enlace)} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="p-2 bg-primary/20 hover:bg-primary/30 rounded-xl text-primary transition-colors flex-shrink-0" 
-                        title="Abrir enlace"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <a 
+                          href={formatearEnlace(item.enlace)} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="p-2 bg-primary/20 hover:bg-primary/30 rounded-xl text-primary transition-colors" 
+                          title="Abrir enlace"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                        <button 
+                          type="button"
+                          onClick={() => handleEliminarPartitura(item.id)}
+                          className="p-2 bg-destructive/20 hover:bg-destructive/30 rounded-xl text-destructive transition-colors" 
+                          title="Eliminar partitura"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
