@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Search, User, Phone, Mail, Calendar, MapPin, Music, Users, Eye, 
-  Filter, Download, X, SortAsc, SortDesc, Table as TableIcon, XCircle, LoaderCircle, PlusCircle, ExternalLink
+  Filter, Download, X, SortAsc, SortDesc, Table as TableIcon, XCircle, LoaderCircle, Loader2, PlusCircle, ExternalLink
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -103,17 +103,6 @@ const INSTRUMENTOS = [
   { id: 'viola', nombre: 'Viola', color: 'bg-[#E3F2FD]', textColor: 'text-[#1976D2]' },
   { id: 'violonchelo', nombre: 'Violonchelo', color: 'bg-[#FCE4EC]', textColor: 'text-[#C2185B]' },
   { id: 'contrabajo', nombre: 'Contrabajo', color: 'bg-[#FFF3E0]', textColor: 'text-[#FF9800]' }
-];
-
-const ORQUESTA_COLORS = [
-  { bg: 'bg-[#E8EAF6]', text: 'text-[#3949AB]', border: 'border-[#3949AB]' },
-  { bg: 'bg-[#E0F2F1]', text: 'text-[#00796B]', border: 'border-[#00796B]' },
-  { bg: 'bg-[#FCE4EC]', text: 'text-[#C2185B]', border: 'border-[#C2185B]' },
-  { bg: 'bg-[#FFF3E0]', text: 'text-[#FF9800]', border: 'border-[#FF9800]' },
-  { bg: 'bg-[#E8F5E8]', text: 'text-[#4CAF50]', border: 'border-[#4CAF50]' },
-  { bg: 'bg-[#FFE0E0]', text: 'text-[#D32F2F]', border: 'border-[#D32F2F]' },
-  { bg: 'bg-[#E0E0FF]', text: 'text-[#5E35B1]', border: 'border-[#5E35B1]' },
-  { bg: 'bg-[#FFF9C4]', text: 'text-[#F57F17]', border: 'border-[#F57F17]' },
 ];
 
 const exportToExcel = async (estudiantes: Estudiante[]) => {
@@ -440,7 +429,6 @@ function EstudiantesPage() {
     tieneRepresentante: ''
   });
 
-  // Estados para la nueva sección de enlaces de partituras
   const [partituras, setPartituras] = useState<PartituraLink[]>([]);
   const [nuevaPartitura, setNuevaPartitura] = useState({
     titulo: '',
