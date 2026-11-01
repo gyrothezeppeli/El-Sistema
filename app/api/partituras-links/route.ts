@@ -8,9 +8,10 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json({ partituras }, { status: 200 });
-  } catch (error: any) {
-    console.error('ERROR DETALLADO EN GET PARTITURAS:', error);
-    return NextResponse.json({ error: error.message || 'Error al obtener las partituras' }, { status: 500 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Error al obtener las partituras';
+    console.error('ERROR EN GET PARTITURAS:', error);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
@@ -38,8 +39,9 @@ export async function POST(request: Request) {
       partitura: nuevaPartitura 
     }, { status: 201 });
     
-  } catch (error: any) {
-    console.error('ERROR DETALLADO EN POST PARTITURAS:', error);
-    return NextResponse.json({ error: error.message || 'Error al guardar la partitura' }, { status: 500 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Error al guardar la partitura';
+    console.error('ERROR EN POST PARTITURAS:', error);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
