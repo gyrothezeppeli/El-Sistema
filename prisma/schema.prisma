@@ -118,3 +118,16 @@ model Rol {
 
   @@map("roles")
 }
+
+// NUEVO MODELO PARA ENLACES DE PARTITURAS
+model PartituraLink {
+  id          String   @id @default(uuid())
+  titulo      String
+  autor       String?
+  instrumento String?
+  enlace      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("partituras_links")
+}
