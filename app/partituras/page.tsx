@@ -10,7 +10,6 @@ import {
   FileText, 
   Download, 
   PlayCircle, 
-  Music, 
   Search, 
   ExternalLink, 
   Loader2 
@@ -23,6 +22,17 @@ interface PartituraItem {
   instrument: string;
   level?: string;
   type?: string;
+  enlace?: string;
+}
+
+// Tipo estricto para los elementos que vienen de la API (en lugar de 'any')
+interface ApiPartituraData {
+  id?: string | number;
+  titulo?: string;
+  title?: string;
+  autor?: string;
+  instrumento?: string;
+  instrument?: string;
   enlace?: string;
 }
 
@@ -47,20 +57,18 @@ export default function PartiturasPage() {
       const res = await fetch('/api/partituras-links');
       if (res.ok) {
         const data = await res.json();
-        const apiItems = data.partituras || data || [];
+        const apiItems: ApiPartituraData[] = data.partituras || data || [];
 
-        // Mapeamos los datos de la API al formato unificado de la interfaz
         if (apiItems.length > 0) {
-          const mappedApiItems: PartituraItem[] = apiItems.map((item: any) => ({
+          const mappedApiItems: PartituraItem[] = apiItems.map((item) => ({
             id: item.id || Date.now(),
-            title: item.titulo || item.title,
+            title: item.titulo || item.title || 'Sin título',
             author: item.autor || 'Compositor / Cátedra',
             instrument: item.instrumento || item.instrument || 'General',
             enlace: item.enlace,
             type: 'ENLACE / PDF',
           }));
 
-          // Unimos las partituras registradas con el mock inicial
           setPartituras([...mappedApiItems, ...partiturasMock]);
         } else {
           setPartituras(partiturasMock);
@@ -75,7 +83,6 @@ export default function PartiturasPage() {
     }
   };
 
-  // Filtrado dinámico por título, autor o instrumento
   const partiturasFiltradas = useMemo(() => {
     const q = busqueda.toLowerCase().trim();
     return partituras.filter((item) =>
