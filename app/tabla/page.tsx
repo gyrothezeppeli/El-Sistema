@@ -150,7 +150,7 @@ const exportToExcel = async (estudiantes: Estudiante[]) => {
     'Cédula del Representante Legal': estudiante.representante?.cedulaRepresentanteLegal || 'No registrado',
     'Representante Legal Vive con el Alumno': estudiante.representante?.representanteLegalViveConAlumno === 'si' ? 'Sí' : 'No',
     'Grado de Instrucción del Representante Legal': estudiante.representante?.gradoInstruccionRepresentanteLegal || 'No especificado',
-    'Dirección del Representante Legal': estudiante.representante?.direccionRepresentanteLegal || 'No especificada',
+    'Dirección de la Representante Legal': estudiante.representante?.direccionRepresentanteLegal || 'No especificada',
     'Teléfono del Representante Legal': estudiante.representante?.telefonoRepresentanteLegal || 'No especificado',
     'Correo del Representante Legal': estudiante.representante?.correoRepresentanteLegal || 'No especificado',
     'Parentesco del Representante Legal': estudiante.representante?.parentescoRepresentanteLegal || 'No especificado',
@@ -296,7 +296,7 @@ function EstudianteDetailsModal({ estudiante, onClose }: { estudiante: Estudiant
               </DetailSection>
             )}
           </div>
-        ScrollArea>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
