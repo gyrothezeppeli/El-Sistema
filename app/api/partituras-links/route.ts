@@ -9,8 +9,7 @@ export async function GET() {
     });
     return NextResponse.json({ partituras }, { status: 200 });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Error al obtener las partituras';
-    console.error('ERROR EN GET PARTITURAS:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido al obtener partituras';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
@@ -40,8 +39,8 @@ export async function POST(request: Request) {
     }, { status: 201 });
     
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Error al guardar la partitura';
-    console.error('ERROR EN POST PARTITURAS:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido al guardar en la base de datos';
+    // Esto enviará el error exacto a la respuesta para que lo veas al hacer la petición
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

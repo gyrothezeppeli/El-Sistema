@@ -4,8 +4,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Estudiante {
@@ -94,7 +95,6 @@ model Representante {
   @@map("representantes")
 }
 
-// MODELO DE USUARIO ACTUALIZADO CON ROL
 model Usuario {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -110,7 +110,6 @@ model Usuario {
   @@map("usuarios")
 }
 
-// NUEVO MODELO DE ROL
 model Rol {
   id       Int       @id @default(autoincrement())
   rol      String    @unique
@@ -119,7 +118,6 @@ model Rol {
   @@map("roles")
 }
 
-// NUEVO MODELO PARA ENLACES DE PARTITURAS
 model PartituraLink {
   id          String   @id @default(uuid())
   titulo      String
