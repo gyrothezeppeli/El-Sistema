@@ -2,27 +2,23 @@
 import { NextResponse } from 'next/server';
 import prismadb from '@/lib/prismadb';
 
-// GET: Obtener todos los enlaces de partituras registrados
 export async function GET() {
   try {
     const partituras = await prismadb.partituraLink.findMany({
       orderBy: { createdAt: 'desc' },
     });
-    
     return NextResponse.json({ partituras }, { status: 200 });
-  } catch (error) {
-    console.error('Error al obtener partituras:', error);
-    return NextResponse.json({ error: 'Error al obtener las partituras' }, { status: 500 });
+  } catch (error: any) {
+    console.error('ERROR DETALLADO EN GET PARTITURAS:', error);
+    return NextResponse.json({ error: error.message || 'Error al obtener las partituras' }, { status: 500 });
   }
 }
 
-// POST: Registrar un nuevo enlace de partitura
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { titulo, autor, instrumento, enlace } = body;
 
-    // Validación básica
     if (!titulo || !enlace) {
       return NextResponse.json({ error: 'El título y el enlace son obligatorios' }, { status: 400 });
     }
@@ -42,8 +38,8 @@ export async function POST(request: Request) {
       partitura: nuevaPartitura 
     }, { status: 201 });
     
-  } catch (error) {
-    console.error('Error al guardar partitura:', error);
-    return NextResponse.json({ error: 'Error al guardar la partitura en la base de datos' }, { status: 500 });
+  } catch (error: any) {
+    console.error('ERROR DETALLADO EN POST PARTITURAS:', error);
+    return NextResponse.json({ error: error.message || 'Error al guardar la partitura' }, { status: 500 });
   }
 }
