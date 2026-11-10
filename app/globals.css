@@ -322,6 +322,21 @@ body {
   color: #ae572d !important;
 }
 
+.warm-glass-theme [class*="bg-blue-"],
+.warm-glass-theme [class*="bg-purple-"] {
+  background-color: rgb(208 98 36 / 12%) !important;
+}
+
+.warm-glass-theme [class*="text-blue-"],
+.warm-glass-theme [class*="text-purple-"] {
+  color: #8e3f24 !important;
+}
+
+.warm-glass-theme [class*="border-blue-"],
+.warm-glass-theme [class*="border-purple-"] {
+  border-color: rgb(208 98 36 / 40%) !important;
+}
+
 .warm-glass-theme [class*="border-[#E8D5C4]"],
 .warm-glass-theme [class*="border-[#D9C7A8]"] {
   border-color: rgb(255 255 255 / 48%) !important;
